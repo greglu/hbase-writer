@@ -37,7 +37,7 @@ SETUP
 
   hbase-writer-x.x.x.jar
   hadoop-x.x.x-core.jar
-  hadoop-hbase-x.x.x.jar
+  hbase-x.x.x.jar
   log4j-x.x.x.jar
 
   Get the latter three jars from ${HADOOP_HOME}/lib.
