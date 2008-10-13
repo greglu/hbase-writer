@@ -3,9 +3,7 @@ This is a processor for heritrix that writes fetched pages to hbase.
 The layout of this contribution is modeled after Doug Judds'
 heritrix-hadoop-dfs-processor available off the heritrix home page.
 
-TODO: License
-
-stack@powerset.com
+This software is licensed under the LGPL.  See accompanying LICENSE.txt document.
 
 TABLE OF CONTENTS
 =================
@@ -25,7 +23,7 @@ for compression.  This facilitates running high-speed, distributed computations
 over content crawled with Heritrix.
 
 The current version of heritrix-hadoop-dfs-writer-processor assumes version
-1.12.0 of Heritrix and version 0.12.2 of Hadoop.  Newer versions of Hadoop
+2.0.x of Heritrix and version 0.18.x of Hadoop.  Newer versions of Hadoop
 and Heritrix may continue to work with this connector as long as the pertinent
 APIs have not changed.  Just replace the jar files with the newer versions.
 
@@ -34,7 +32,7 @@ SETUP
 =====
 
 1. Start an instance of hbase.
-2. Install heritrix-1.12.x
+2. Install heritrix-2.0.x
 3. Copy the following jar files into the ${HERITRIX_HOME}/lib directory:
 
   hbase-writer-x.x.x.jar
@@ -64,7 +62,6 @@ master
 
 table
   Which table to crawl into.
-
 
 COMPILING THE SOURCE
 ====================
