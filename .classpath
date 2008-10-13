@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/hadoop-trunk"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/heritrix_1_12"/>
-	<classpathentry kind="lib" path="/heritrix_1_12/lib/commons-pool-1.3.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="lib" path="HERITRIX2_HOME/lib/archive-overlay-commons-pool-1.3.jar"/>
+	<classpathentry kind="lib" path="HBASE_HOME/hbase-0.18.0.jar"/>
+	<classpathentry kind="output" path="eclipse-bin"/>
 </classpath>
