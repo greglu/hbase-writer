@@ -36,11 +36,9 @@ SETUP
 3. Copy the following jar files into the ${HERITRIX_HOME}/lib directory:
 
   hbase-writer-x.x.x.jar
-  hadoop-x.x.x-core.jar
   hbase-x.x.x.jar
+  hadoop-x.x.x-core.jar
   log4j-x.x.x.jar
-
-  Get the latter three jars from ${HADOOP_HOME}/lib.
 
 4. Start Heritrix
 
@@ -48,14 +46,12 @@ SETUP
 CONFIGURING HERITRIX
 ====================
 
-On the Modules Page "Select Writers" section
+On the "Settings for sheet 'global'":
 
-- Remove the ARCWriterProcessor
-- Add the HBaseWriterProcessor in the "Select Writers" section
-  (NOTE: it's at the *bottom* of the drop-down menu)
-
-On the Settings page you will find the following configuration items under
-write-processors -> HDFSArchiver section:
+- Click on a 'details' link and add new processor com.powerset.heritrix.writer.HBaseWriterProcessor.
+- Return to the global sheet and set this as your writer (the page will not draw completely if
+did not type in the name of the processor properly -- see heritrix_out.log for errors).
+- Set at least the master and table configuration for HBaseWriterProcessor.
 
 master
   The host and port of the hbase master server.
@@ -66,14 +62,4 @@ table
 COMPILING THE SOURCE
 ====================
 
-Run the following commands:
-
-tar xzvf hbase-writer-x.x.x.tar.gz
-cd hbase-writer-x.x.x
-(Create a build.properties with defines for hadoop.home.dir and
-heritrix.home.dir so the hbase build can find the jars it needs)
-ant jar
-
-The jar file will end up in the build/ subdirectory.  To see the new hbase
-writer processor in eclipse, you need to add the
-hbase-writer-x.x.xjar in the 'Java build path -> Libraries' panel.
+Use maven2.
