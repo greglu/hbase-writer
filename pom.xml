@@ -43,7 +43,7 @@
       <archive>http://mail-archives.apache.org/mod_mbox/hadoop-hbase-commits/</archive>
     </mailingList>
   </mailingLists>
-  
+
   <licenses>
     <license>
       <name>LGPL</name>
@@ -74,6 +74,11 @@
         <checksumPolicy>warn</checksumPolicy>
       </snapshots>
     </repository>
+    <repository>
+      <id>archive-releases</id>
+      <name>Archive Releases</name>
+      <url>http://builds.archive.org:8080/maven2</url>
+    </repository>
   </repositories>
   
   <distributionManagement>
@@ -94,11 +99,8 @@
 	      <id>stack</id>
 	      <name>Michael Stack</name>
 	      <email>stack@duboce.net</email>
-	      <url>http://wiki.apache.org/hadoop/MichaelStack</url>
-	      <organization>Open Source Masters</organization>
-	      <organizationUrl>http://opensourcemasters.com/</organizationUrl>
 	      <roles>
-	        <role>Architect</role>
+	        <role>Developer</role>
 	      </roles>
 	      <timezone>-8</timezone>
       </developer>
@@ -138,19 +140,19 @@
     </dependency>
     
     <dependency>
-       <groupId>org.archive.crawler</groupId>
-       <artifactId>common</artifactId>
+       <groupId>org.archive.heritrix</groupId>
+       <artifactId>commons</artifactId>
        <version>2.0.1</version>
     </dependency>
     
     <dependency>
-	   <groupId>org.archive.crawler</groupId>
+	   <groupId>org.archive.heritrix</groupId>
 	   <artifactId>engine</artifactId>
 	   <version>2.0.1</version>
     </dependency>
     
     <dependency>
-	   <groupId>org.archive.crawler</groupId>
+	   <groupId>org.archive.heritrix</groupId>
 	   <artifactId>modules</artifactId>
 	   <version>2.0.1</version>
     </dependency>
