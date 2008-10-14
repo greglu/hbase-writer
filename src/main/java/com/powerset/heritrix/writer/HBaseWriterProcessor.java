@@ -25,6 +25,7 @@
  */
 package com.powerset.heritrix.writer;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
@@ -45,6 +46,7 @@ import org.archive.modules.net.ServerCache;
 import org.archive.modules.net.ServerCacheUtil;
 import org.archive.state.Expert;
 import org.archive.state.Immutable;
+import org.archive.state.Initializable;
 import org.archive.state.Key;
 import org.archive.state.KeyManager;
 import org.archive.state.StateProvider;
@@ -54,7 +56,8 @@ import org.archive.util.IoUtils;
  * HBase writer.
  * @author stack
  */
-public class HBaseWriterProcessor extends Processor {
+public class HBaseWriterProcessor extends Processor implements
+Initializable, Closeable {
   private static final long serialVersionUID = 7166781798179114353L;
 
   private final Logger logger = Logger.getLogger(this.getClass().getName());
