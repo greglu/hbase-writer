@@ -27,9 +27,9 @@ package com.powerset.heritrix.writer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.pool.BasePoolableObjectFactory;
+import org.archive.io.DefaultWriterPoolSettings;
 import org.archive.io.WriterPool;
 import org.archive.io.WriterPoolMember;
-import org.archive.io.WriterPoolSettings;
 
 
 /**
@@ -37,45 +37,26 @@ import org.archive.io.WriterPoolSettings;
  * @author stack
  */
 public class HBaseWriterPool extends WriterPool {
-    /**
-     * Constructor
-     *
-     * @param settings Settings for this pool.
-     * @param poolMaximumActive
-     * @param poolMaximumWait
-     */
-    public HBaseWriterPool(final WriterPoolSettings settings,
-            final int poolMaximumActive, final int poolMaximumWait) {
-        this(null, settings, poolMaximumActive, poolMaximumWait);
-    }
+  /**
+   * Constructor
+   * @param poolMaximumActive
+   * @param poolMaximumWait
+   */
+  public HBaseWriterPool(final String master, final String table,
+      final int poolMaximumActive, final int poolMaximumWait) {
+    // Below is hard to follow.  Its invocation of this classes super
+    // constructor passing a serial, an instance of BasePoolable.. that
+    // is defined in line, followed by settings, max and wait.
+    super(new AtomicInteger(), new BasePoolableObjectFactory() {
+      public Object makeObject() throws Exception {
+        return new HBaseWriter(master, table);
+      }
 
-    /**
-     * Constructor
-     *
-     * @param serial  Used to generate unique filename sequences
-     * @param settings Settings for this pool.
-     * @param poolMaximumActive
-     * @param poolMaximumWait
-     */
-    public HBaseWriterPool(final AtomicInteger serial,
-            final WriterPoolSettings settings, final int poolMaximumActive,
-            final int poolMaximumWait) {
-        // Below is hard to follow.  Its invocation of this classes super
-        // constructor passing a serial, an instance of BasePoolable.. that
-        // is defined in line, followed by settings, max and wait.
-        super(serial, new BasePoolableObjectFactory() {
-            public Object makeObject() throws Exception {
-                HBaseWriterPoolSettings hbaseSettings =
-                    (HBaseWriterPoolSettings)settings;
-                return new HBaseWriter(hbaseSettings.getMaster(),
-                    hbaseSettings.getTable());
-            }
-
-            public void destroyObject(Object arcWriter)
-            throws Exception {
-                ((WriterPoolMember)arcWriter).close();
-                super.destroyObject(arcWriter);
-            }
-        }, settings, poolMaximumActive, poolMaximumWait);
-    }
+      public void destroyObject(Object arcWriter)
+      throws Exception {
+        ((WriterPoolMember)arcWriter).close();
+        super.destroyObject(arcWriter);
+      }
+    }, new DefaultWriterPoolSettings(), poolMaximumActive, poolMaximumWait);
+  }
 }

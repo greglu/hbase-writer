@@ -1,0 +1,25 @@
+description:
+HBaseWriter processor.
+
+server-cache-description:
+The server cache used to resolve IP addresses.
+
+pool-max-active-description:
+Maximum active files in pool. This setting cannot be varied over the life
+of a crawl.
+
+
+pool-max-wait-description:
+Maximum time to wait on pool element (milliseconds). This setting cannot
+be varied over the life of a crawl.
+
+total-bytes-to-write-description:
+Total file bytes to write to disk. Once the size of all files on disk has
+exceeded this limit, this processor will stop the crawler. A value of
+zero means no upper limit.
+
+table-description:
+Name of the HBase table to write crawl to
+
+master-description:
+Master host and port: e.g. localhost:60010
