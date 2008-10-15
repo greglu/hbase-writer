@@ -11,6 +11,8 @@ TABLE OF CONTENTS
 * CONFIGURING HERITRIX
 * FILE FORMAT
 * COMPILING THE SOURCE
+* BUILDING THE JAR
+* BUILDING THE SITE-REPORT
 
 The heritrix-hadoop-dfs-writer-processor is an extension to the Heritrix open
 source crawler written by the Internet Archive (http://crawler.archive.org/)
@@ -28,8 +30,8 @@ and Heritrix may continue to work with this connector as long as the pertinent
 APIs have not changed.  Just replace the jar files with the newer versions.
 
 
-SETUP
-=====
+QUCIK SETUP
+===========
 
 1. Start an instance of hbase.
 2. Install heritrix-2.0.x
@@ -61,13 +63,41 @@ table
 
 COMPILING THE SOURCE
 ====================
-Use maven2.
   mvn clean compile
 
 BUILDING THE JAR
 =====================
   mvn clean package
+
+The hbase-writer-x.x.x.jar should be in the target/ directory.  
+You can get the hadoop, hbase and log4j dependency jars from your ${HOME}/.m2/repository/ directory.
+For example:
+  cp ${HOME}/.m2/repository/org/apache/hadoop/hbase/0.18.0/hbase-0.18.0.jar ${HERITRIX_HOME}/lib/
+  cp ${HOME}/.m2/repository/org/apache/hadoop/hadoop-core/0.18.0/hadoop-core-0.18.0.jar ${HERITRIX_HOME}/lib/ 
+  cp ${HOME}/.m2/repository/log4j/log4j/1.2.14/log4j-1.2.14.jar ${HERITRIX_HOME}/lib/
   
+UPGRADING TP NEW HADOOP/HBASE/HERITRIX VERSIONS
+================================================
+To build hbase-writer with new versions of hadoop, hbase or heritrix (or any of the dependencies), use a ${HOME}/.m2/settings.xml file.
+
+A sample settings.xml file:
+ <?xml version="1.0" encoding="UTF-8"?>
+ <settings>
+  <profiles>
+	<profile>
+	  <id>myBuild</id>
+	  <properties>
+            <heritrix.version>2.0.2</heritrix.version>
+            <hbase.version>0.18.1</hbase.version>
+            <hadoop.version>0.18.1</hadoop.version>
+	  </properties>
+	</profile>
+  </profiles>
+ </settings> 
+  
+Place this file in your ${HOME}/.m2/ directory and run the maven build command:
+ mvn clean package -PmyBuild
+ 
 BUILDING THE SITE REPORT
 ========================
   mvn clean site

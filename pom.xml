@@ -63,12 +63,12 @@
     <repository>
       <id>hadoop-releases</id>
       <name>Hadoop Releases</name>
-      <url>http://repo1.opensourcemasters.com:8081/nexus/content/groups/public</url>
+      <url>${hbase-writer.repository-manager.releases}</url>
     </repository>
     <repository>
       <id>hadoop-snapshots</id>
       <name>Hadoop Snapshots</name>
-      <url>http://repo1.opensourcemasters.com:8081/nexus/content/groups/public-snapshots</url>
+      <url>${hbase-writer.repository-manager.snapshots}</url>
       <snapshots>
         <enabled>true</enabled>
         <checksumPolicy>warn</checksumPolicy>
@@ -92,6 +92,13 @@
         <name>Apache Hadoop Snapshots</name>
         <url>http://repo1.opensourcemasters.com:8081/nexus/content/groups/public-snapshots</url>
       </snapshotRepository>
+      <!-- 
+      <site>
+        <id>hadoop-sites</id>
+        <name>Apache Hadoop Maven Site-Reports</name>
+        <url></url>
+      </site>
+       -->
   </distributionManagement>
   
   <developers>
@@ -131,50 +138,50 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-core</artifactId>
-       <version>0.18.0</version>
+       <version>${hadoop.version}</version>
     </dependency>
     
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hbase</artifactId>
-       <version>0.18.0</version>
+       <version>${hbase.version}</version>
     </dependency>
     
     <dependency>
        <groupId>org.archive.heritrix</groupId>
        <artifactId>commons</artifactId>
-       <version>2.0.1</version>
+       <version>${heritrix.version}</version>
     </dependency>
     
     <dependency>
 	   <groupId>org.archive.heritrix</groupId>
 	   <artifactId>engine</artifactId>
-	   <version>2.0.1</version>
+	   <version>${heritrix.version}</version>
     </dependency>
     
     <dependency>
 	   <groupId>org.archive.heritrix</groupId>
 	   <artifactId>modules</artifactId>
-	   <version>2.0.1</version>
+	   <version>${heritrix.version}</version>
     </dependency>
     
     <!--     -->
     <dependency>
       <groupId>it.unimi.dsi</groupId>
       <artifactId>fastutil</artifactId>
-      <version>5.0.3</version>
+      <version>${fastutil.version}</version>
     </dependency>
     
     <dependency>
 	   <groupId>org.archive.overlays</groupId>
 	   <artifactId>archive-overlay-commons-pool</artifactId>
-	   <version>1.3</version>
+	   <version>${overlay.commons-pool.version}</version>
     </dependency>
 
     <dependency>
 	   <groupId>org.archive.overlays</groupId>
 	   <artifactId>archive-overlay-commons-httpclient</artifactId>
-	   <version>3.1</version>
+	   <version>${overlay.commons-httpclient.version}</version>
     </dependency>
   </dependencies>
   
@@ -333,8 +340,14 @@
   </reporting>
   
   <properties>
-    <hadoop.home.dir>/Users/stack/Documents/checkouts/hadoop-trunk</hadoop.home.dir>
-    <heritrix.home.dir>/Users/stack/Desktop/heritrix-2.0.0-RC1</heritrix.home.dir>
+     <hbase-writer.repository-manager.releases>http://repo1.opensourcemasters.com:8081/nexus/content/groups/public</hbase-writer.repository-manager.releases>
+     <hbase-writer.repository-manager.snapshots>http://repo1.opensourcemasters.com:8081/nexus/content/groups/public-snapshots</hbase-writer.repository-manager.snapshots>
+     <heritrix.version>2.0.1</heritrix.version>
+     <hbase.version>0.18.0</hbase.version>
+     <hadoop.version>0.18.0</hadoop.version>
+     <fastutil.version>5.0.3</fastutil.version>
+     <overlay.commons-pool.version>1.3</overlay.commons-pool.version>
+     <overlay.commons-httpclient.version>3.1</overlay.commons-httpclient.version>
   </properties>
   
 </project>
