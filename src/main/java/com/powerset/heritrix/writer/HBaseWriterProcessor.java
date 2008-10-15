@@ -53,7 +53,7 @@ import org.archive.state.StateProvider;
 import org.archive.util.IoUtils;
 
 /**
- * HBase writer.
+ * An <a href="http://crawler.archive.org">heritrix2</a> processor that writes to <a href="http://hbase.org">Hadoop HBase</a>.
  * @author stack
  */
 public class HBaseWriterProcessor extends Processor implements
