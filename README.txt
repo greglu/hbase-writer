@@ -67,5 +67,9 @@ Use maven2.
 BUILDING THE JAR
 =====================
   mvn clean package
+  
+BUILDING THE SITE REPORT
+========================
+  mvn clean site
 
 	
