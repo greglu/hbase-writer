@@ -61,5 +61,11 @@ table
 
 COMPILING THE SOURCE
 ====================
-
 Use maven2.
+  mvn clean compile
+
+BUILDING THE JAR
+=====================
+  mvn clean package
+
+	
