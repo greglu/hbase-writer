@@ -76,8 +76,6 @@
     </notifiers>
   </ciManagement>
 
-  
-  
   <repositories>
     <repository>
       <id>hadoop-releases</id>
@@ -123,8 +121,9 @@
 	      <id>stack</id>
 	      <name>Michael Stack</name>
 	      <email>stack@duboce.net</email>
+	      <organization>Powerset</organization>
+	      <organizationUrl>http://powerset.com/</organizationUrl>
 	      <roles>
-	        <role>Architect</role>
 	        <role>Developer</role>
 	      </roles>
 	      <timezone>-8</timezone>
@@ -360,8 +359,8 @@
      <hbase-writer.repository-manager.releases>http://repo1.opensourcemasters.com:8081/nexus/content/groups/public</hbase-writer.repository-manager.releases>
      <hbase-writer.repository-manager.snapshots>http://repo1.opensourcemasters.com:8081/nexus/content/groups/public-snapshots</hbase-writer.repository-manager.snapshots>
      
-     <hbase-writer.distribution-manager.releases>http://repo1.opensourcemasters.com:8081/nexus/content/groups/public</hbase-writer.distribution-manager.releases>
-     <hbase-writer.distribution-manager.snapshots>http://repo1.opensourcemasters.com:8081/nexus/content/groups/public-snapshots</hbase-writer.distribution-manager.snapshots>
+     <hbase-writer.distribution-manager.releases>http://repo1.opensourcemasters.com:8081/nexus/content/repositories/releases/</hbase-writer.distribution-manager.releases>
+     <hbase-writer.distribution-manager.snapshots>http://repo1.opensourcemasters.com:8081/nexus/content/repositories/snapshots/</hbase-writer.distribution-manager.snapshots>
      <hbase-writer.distribution-manager.report-site>/usr/local/www/projects.osm/hbase-writer-site/</hbase-writer.distribution-manager.report-site>
      
      <heritrix.version>2.0.1</heritrix.version>
@@ -370,8 +369,8 @@
      <fastutil.version>5.0.3</fastutil.version>
      <overlay.commons-pool.version>1.3</overlay.commons-pool.version>
      <overlay.commons-httpclient.version>3.1</overlay.commons-httpclient.version>
-     <hbase-writer.dev.email>rsmith@opensourcemasters.com</hbase-writer.dev.email>
      
+     <hbase-writer.dev.email>rsmith@opensourcemasters.com</hbase-writer.dev.email>
   </properties>
   
 </project>
