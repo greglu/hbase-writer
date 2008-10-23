@@ -1,4 +1,4 @@
-/*
+/**
  * HBaseWriter
  *
  * $Id$
@@ -58,17 +58,20 @@ import org.archive.modules.ProcessorURI;
 public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstants {
   private final Logger LOG = Logger.getLogger(this.getClass().getName());
   private final HTable client;
-
+  // TODO: make this variable configurable in the heritrix sheet: CONTENT_COLUMN_FAMILY
   public static final String CONTENT_COLUMN_FAMILY = "content:";
+  // TODO: make this variable configurable in the heritrix sheet: CONTENT_COLUMN
+  public static final String CONTENT_COLUMN = CONTENT_COLUMN_FAMILY + "raw_data";
+  // TODO: make this variable configurable in the heritrix sheet: CURI_COLUMN_FAMILY
   public static final String CURI_COLUMN_FAMILY = "curi:";
-  public static final String IP_COLUMN = CURI_COLUMN_FAMILY + "ip";
-  public static final String PATH_FROM_SEED_COLUMN =
+  
+  private static final String IP_COLUMN = CURI_COLUMN_FAMILY + "ip";
+  private static final String PATH_FROM_SEED_COLUMN =
     CURI_COLUMN_FAMILY + "path-from-seed";
-  public static final String IS_SEED_COLUMN = CURI_COLUMN_FAMILY + "is-seed";
-  public static final String VIA_COLUMN = CURI_COLUMN_FAMILY + "via";
-  public static final String URL_COLUMN = CURI_COLUMN_FAMILY + "url";
-  public static final String CRAWL_TIME_COLUMN = CURI_COLUMN_FAMILY + "time";
-  public static final String REQUEST_COLUMN = CURI_COLUMN_FAMILY + "request";
+  private static final String IS_SEED_COLUMN = CURI_COLUMN_FAMILY + "is-seed";
+  private static final String VIA_COLUMN = CURI_COLUMN_FAMILY + "via";
+  private static final String URL_COLUMN = CURI_COLUMN_FAMILY + "url";
+  private static final String REQUEST_COLUMN = CURI_COLUMN_FAMILY + "request";
 
   public HBaseWriter(final String master, final String table)
   throws IOException {
@@ -133,11 +136,28 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
         add(bu, REQUEST_COLUMN, ros.getReplayInputStream(), (int)ros.getSize());
       }
       // Response
-      add(bu, CONTENT_COLUMN_FAMILY, ris.getReplayInputStream(),
+      add(bu, CONTENT_COLUMN, ris.getReplayInputStream(),
         (int)ris.getSize());
+      // process the content (optional)
+      processContent(bu);
       // Set crawl time.
       bu.setTimestamp(curi.getFetchBeginTime());
       this.client.commit(bu);
+  }
+  
+  /**
+   *  This is a stub method and is here to allow extension/overriding for 
+   *  custom content parsing, data manipulation and to populate new columns.
+   *  
+   *  For Example : html parsing, text extraction, analysis and transformation and 
+   *  storing the results in new column families/columns using the batch update object.
+   *  
+   * @param bu
+   */
+  protected void processContent(BatchUpdate bu) {
+	  //byte[] content = bu.get(CONTENT_COLUMN);
+	  // process content.....
+	  //bu.put("some:new_column", someParsedByteArray);
   }
   
   /*
