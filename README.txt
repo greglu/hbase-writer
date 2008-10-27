@@ -1,3 +1,10 @@
+Welcome to HBase-Writer README.  
+
+This document can also be found online here:
+http://code.google.com/p/hbase-writer/wiki/README
+
+INTRODUCTION
+============
 This is a processor for heritrix that writes fetched pages to hbase.
 
 The layout of this contribution is modeled after Doug Judds'
