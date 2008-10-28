@@ -3,4 +3,6 @@ HBase Change Log
 Release 0.18.0 
   Initial Release - Compatible with hadoop-0.18.0, hbase-0.18.0 & heritrix 2.0.1
   
- 
+Release 0.18.1 
+  Compatible with hadoop-0.18.1, hbase-0.18.1 & heritrix 2.0.1
+  

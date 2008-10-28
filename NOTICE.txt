@@ -1,0 +1,8 @@
+Thanks to Questio for the time and support for allowing the release and maintenance of this project. (http://questio.com)
+
+The HBase-Writer project uses libraries from the the following projects:
+
+Heritrix2 http://crawler.archive.org/
+Hadoop http://hadoop.apache.org/
+HBase http://hbase.org/
+
