@@ -96,22 +96,27 @@
       <name>Archive Releases</name>
       <url>http://builds.archive.org:8080/maven2</url>
     </repository>
+    <repository>
+      <id>oracle-releases</id>
+      <name>Oracle Repository</name>
+      <url>http://download.oracle.com/maven</url>
+    </repository>
   </repositories>
   
   <distributionManagement>
-    <repository>
-        <id>hadoop-releases</id>
-        <name>Apache Hadoop Deployment Repository</name>
+     <repository>
+        <id>hbaswriter-releases</id>
+        <name>HBaseWriter Release Repository</name>
         <url>${hbase-writer.distribution-manager.releases}</url>
       </repository>
       <snapshotRepository>
-        <id>hadoop-snapshots</id>
-        <name>Apache Hadoop Snapshots</name>
+        <id>hbaswriter-snapshots</id>
+        <name>HBaseWriter Snapshot Repository</name>
         <url>${hbase-writer.distribution-manager.snapshots}</url>
       </snapshotRepository>
       <site>
-        <id>hadoop-sites</id>
-        <name>Apache Hadoop Maven Site-Reports</name>
+        <id>hbaswriter-sites</id>
+        <name>HBaseWriter Maven Site-Reports</name>
         <url>${hbase-writer.distribution-manager.report-site}</url>
       </site>
   </distributionManagement>
