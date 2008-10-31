@@ -83,7 +83,7 @@ For example:
   cp ${HOME}/.m2/repository/org/apache/hadoop/hadoop-core/0.18.0/hadoop-core-0.18.0.jar ${HERITRIX_HOME}/lib/ 
   cp ${HOME}/.m2/repository/log4j/log4j/1.2.14/log4j-1.2.14.jar ${HERITRIX_HOME}/lib/
   
-UPGRADING TP NEW HADOOP/HBASE/HERITRIX VERSIONS
+UPGRADING TO NEW HADOOP/HBASE/HERITRIX VERSIONS
 ================================================
 To build hbase-writer with new versions of hadoop, hbase or heritrix (or any of the dependencies), use a ${HOME}/.m2/settings.xml file.
 
