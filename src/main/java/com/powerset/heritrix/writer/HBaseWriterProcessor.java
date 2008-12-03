@@ -1,4 +1,4 @@
-/*
+/**
  * HBaseWriterProcessor
  *
  * $Id$
@@ -83,7 +83,6 @@ Initializable, Closeable {
   final public static Key<Integer> POOL_MAX_ACTIVE =
     Key.make(WriterPool.DEFAULT_MAX_ACTIVE);
 
-
   /**
    * Maximum time to wait on pool element (milliseconds). This setting cannot
    * be varied over the life of a crawl.
@@ -95,6 +94,13 @@ Initializable, Closeable {
   @Immutable
   final public static Key<ServerCache> SERVER_CACHE = 
     Key.makeAuto(ServerCache.class);
+
+  /**
+   * Maximum allowable content size.
+   */
+  @Immutable
+  final public static Key<Integer> CONTENT_MAX_SIZE =
+    Key.make(20 * 1024 * 1024);
 
   /**
    * Total file bytes to write to disk. Once the size of all files on disk has
@@ -112,6 +118,7 @@ Initializable, Closeable {
   private ServerCache serverCache;
   private int maxActive;
   private int maxWait;
+  private int maxContentSize;
   private String master;
   private String table;
 
@@ -135,6 +142,7 @@ Initializable, Closeable {
     this.maxWait = context.get(this, POOL_MAX_WAIT).intValue();
     this.master = context.get(this, MASTER);
     this.table = context.get(this, TABLE);
+    this.maxContentSize = context.get(this, CONTENT_MAX_SIZE).intValue();
     setupPool();
   }
 
@@ -250,7 +258,16 @@ Initializable, Closeable {
       curi.getAnnotations().add("unwritten:status");
       return false;
     }
-    return true;
+    
+    if (curi.getContentSize() > this.maxContentSize) {
+       // content size is too large
+       curi.getAnnotations().add("unwritten:size");
+       logger.warning("content size for " + curi.getUURI() + " is too large (" +
+         curi.getContentSize() + ") - maximum content size is: " + this.maxContentSize );
+       return false;
+     }
+    
+     return true;
   }
 
   protected ProcessResult write(final ProcessorURI curi,
@@ -265,15 +282,10 @@ Initializable, Closeable {
       w.write(curi, getHostAddress(curi),
           curi.getRecorder().getRecordedOutput(),
           curi.getRecorder().getRecordedInput());
-    } catch (IOException e) {
-      writer = null;
-      throw e;
     } finally {
-      if (writer != null) {
-        setTotalBytesWritten(getTotalBytesWritten() +
-            (writer.getPosition() - position));
-        getPool().returnFile(writer);
-      }
+      setTotalBytesWritten(getTotalBytesWritten() +
+          (writer.getPosition() - position));
+      getPool().returnFile(writer);
     }
     return checkBytesWritten(curi);
   }

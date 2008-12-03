@@ -27,8 +27,6 @@ package com.powerset.heritrix.writer;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
@@ -39,6 +37,7 @@ import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.io.BatchUpdate;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.Keying;
+import org.apache.log4j.Logger;
 import org.archive.io.ArchiveFileConstants;
 import org.archive.io.RecordingInputStream;
 import org.archive.io.RecordingOutputStream;
@@ -112,8 +111,8 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
   throws IOException {
     String url = curi.toString();
     String row = Keying.createKey(url);
-    if (LOG.isLoggable(Level.FINE)) {
-      LOG.fine("Writing " + url + " as " + row.toString());
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("Writing " + url + " as " + row.toString());
     }
     BatchUpdate bu = new BatchUpdate(row);
     bu.put(URL_COLUMN, Bytes.toBytes(url));

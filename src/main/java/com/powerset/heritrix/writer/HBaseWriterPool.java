@@ -1,4 +1,4 @@
-/* HBaseWriterPool
+/** HBaseWriterPool
  *
  * $Id$
  *
