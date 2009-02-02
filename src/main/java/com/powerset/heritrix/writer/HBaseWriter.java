@@ -52,7 +52,6 @@ import org.archive.modules.ProcessorURI;
  * if it does not exist.
  * 
  * <p>Limitations: Hard-coded table schema.
- * @author stack
  */
 public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstants {
   private final Logger LOG = Logger.getLogger(this.getClass().getName());
@@ -85,7 +84,11 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
     createCrawlTable(c, table);
     this.client = new HTable(c, table);
   }
-
+  
+  public HTable getClient() {
+	return client;
+  }
+  
   protected void createCrawlTable(final HBaseConfiguration c,
       final String table)
   throws IOException {

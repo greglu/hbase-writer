@@ -34,7 +34,6 @@ import org.archive.io.WriterPoolMember;
 
 /**
  * A pool of HBaseWriters.
- * @author stack
  */
 public class HBaseWriterPool extends WriterPool {
   /**

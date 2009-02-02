@@ -29,10 +29,10 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.apache.hadoop.hbase.HConstants;
+import org.apache.hadoop.hbase.util.Keying;
+import org.apache.log4j.Logger;
 import org.archive.io.ReplayInputStream;
 import org.archive.io.WriterPool;
 import org.archive.io.WriterPoolMember;
@@ -54,13 +54,12 @@ import org.archive.util.IoUtils;
 
 /**
  * An <a href="http://crawler.archive.org">heritrix2</a> processor that writes to <a href="http://hbase.org">Hadoop HBase</a>.
- * @author stack
  */
 public class HBaseWriterProcessor extends Processor implements
 Initializable, Closeable {
   private static final long serialVersionUID = 7166781798179114353L;
 
-  private final Logger logger = Logger.getLogger(this.getClass().getName());
+  private final Logger LOG = Logger.getLogger(this.getClass().getName());
 
   /**
    * Location of hbase master.
@@ -75,6 +74,13 @@ Initializable, Closeable {
   @Immutable
   public static final Key<String> TABLE = Key.make("crawl");
 
+  /**
+   * If set to true, then only process urls that are new rowkey records.
+   * Default is false, collect all urls.
+   */
+  @Immutable
+  public static final Key<Boolean> ONLY_NEW_RECORDS = Key.make(false);
+  
   /**
    * Maximum active files in pool. This setting cannot be varied over the life
    * of a crawl.
@@ -121,6 +127,7 @@ Initializable, Closeable {
   private int maxContentSize;
   private String master;
   private String table;
+  private boolean onlyWriteNewRecords;
 
   /*
    * Total number of bytes written to disc.
@@ -142,6 +149,7 @@ Initializable, Closeable {
     this.maxWait = context.get(this, POOL_MAX_WAIT).intValue();
     this.master = context.get(this, MASTER);
     this.table = context.get(this, TABLE);
+    this.onlyWriteNewRecords = context.get(this, ONLY_NEW_RECORDS).booleanValue();
     this.maxContentSize = context.get(this, CONTENT_MAX_SIZE).intValue();
     setupPool();
   }
@@ -191,11 +199,10 @@ Initializable, Closeable {
         ris = curi.getRecorder().getRecordedInput().getReplayInputStream();
         return write(curi, recordLength, ris, getHostAddress(curi));
       }
-      logger.info("does not write " + curi.toString());
+      LOG.info("does not write " + curi.toString());
     } catch (IOException e) {
       curi.getNonFatalFailures().add(e);
-      logger.log(Level.SEVERE, "Failed write of Record: " +
-          curi.toString(), e);
+      LOG.error("Failed write of Record: " + curi.toString(), e);
     } finally {
       IoUtils.close(ris);
     }
@@ -260,20 +267,18 @@ Initializable, Closeable {
     }
     
     if (curi.getContentSize() > this.maxContentSize) {
-       // content size is too large
-       curi.getAnnotations().add("unwritten:size");
-       logger.warning("content size for " + curi.getUURI() + " is too large (" +
-         curi.getContentSize() + ") - maximum content size is: " + this.maxContentSize );
-       return false;
+      // content size is too large
+      curi.getAnnotations().add("unwritten:size");
+      LOG.warn("content size for " + curi.getUURI() + " is too large (" +
+        curi.getContentSize() + ") - maximum content size is: " + this.maxContentSize );
+      return false;
      }
     
      return true;
   }
 
   protected ProcessResult write(final ProcessorURI curi,
-      @SuppressWarnings("unused") long recordLength, 
-      @SuppressWarnings("unused") InputStream in,
-      @SuppressWarnings("unused") String ip)
+      long recordLength, InputStream in, String ip)
   throws IOException {
     WriterPoolMember writer = getPool().borrowFile();
     long position = writer.getPosition();
@@ -303,7 +308,7 @@ Initializable, Closeable {
   }
 
 
-  protected void innerProcess(@SuppressWarnings("unused") ProcessorURI puri) {
+  protected void innerProcess(ProcessorURI puri) {
     throw new AssertionError();
   }  
 
@@ -332,7 +337,39 @@ Initializable, Closeable {
       // HTTP headers with zero-length body is available.
       return false;
     }
-
+    
+    // If onlyWriteNewRecords is enabled and the given rowkey has cell data, don't write the record.
+    if (this.onlyWriteNewRecords) {
+    	WriterPoolMember writer;
+		try {
+			writer = getPool().borrowFile();
+		} catch (IOException e1) {
+			return false;
+		}
+		HBaseWriter w = (HBaseWriter)writer;
+	    try {
+	    	// Here we can generate the rowkey for this uri ...
+	        String url = curi.toString();
+	        String row = Keying.createKey(url);
+	        // and look it up to see if it already exists...
+			if (!w.getClient().getRow(row).isEmpty()) {
+				if (LOG.isTraceEnabled()) {
+				      LOG.trace("Not Writing " + url + " since: " + row.toString() + " exists and onlyWriteNewRecords is enabled.");
+				}
+				return false;
+			}
+	    } catch (IOException e) {
+	    	return false;
+	    } finally {
+	    	try {
+	    		getPool().returnFile(writer);
+	    	} catch (IOException e) {
+			    return false;
+			}
+	    }
+    }
+    
+    // If we make it here, then we passed all our checks and we can assume we should write the record. 
     return true;
   }
 }
