@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.net.InetAddress;
 
 import org.apache.hadoop.hbase.HConstants;
+import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.util.Keying;
 import org.apache.log4j.Logger;
 import org.archive.io.ReplayInputStream;
@@ -347,19 +348,22 @@ Initializable, Closeable {
 			return false;
 		}
 		HBaseWriter w = (HBaseWriter)writer;
+		HTable ht = w.getClient();
 	    try {
 	    	// Here we can generate the rowkey for this uri ...
 	        String url = curi.toString();
 	        String row = Keying.createKey(url);
 	        // and look it up to see if it already exists...
-			if (!w.getClient().getRow(row).isEmpty()) {
+	        
+			if (ht.getRow(row) != null && !ht.getRow(row).isEmpty()) {
 				if (LOG.isTraceEnabled()) {
 				      LOG.trace("Not Writing " + url + " since: " + row.toString() + " exists and onlyWriteNewRecords is enabled.");
 				}
 				return false;
 			}
 	    } catch (IOException e) {
-	    	return false;
+            LOG.warn("Failed to determine if record should be written or not, deciding not to write the record: " + e.getMessage());
+	        return false;
 	    } finally {
 	    	try {
 	    		getPool().returnFile(writer);
