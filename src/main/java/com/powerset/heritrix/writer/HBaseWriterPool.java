@@ -4,8 +4,6 @@
  *
  * Created on June 23rd, 2007
  *
- * Copyright (C) 2007 stack
- *
  * This file is part of the Heritrix web crawler (crawler.archive.org).
  *
  * Heritrix is free software; you can redistribute it and/or modify
