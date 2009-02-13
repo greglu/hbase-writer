@@ -129,7 +129,6 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 	private String master;
 	private String tableName;
 	private boolean onlyWriteNewRecords;
-	private HTable table;
 
 	/*
 	 * Total number of bytes written to disc.
@@ -153,10 +152,6 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 		this.onlyWriteNewRecords = context.get(this, ONLY_NEW_RECORDS).booleanValue();
 		this.maxContentSize = context.get(this, CONTENT_MAX_SIZE).intValue();
 		setupPool();
-		// FIXME
-		if (this.onlyWriteNewRecords) {
-			// getPool().
-		}
 	}
 
 	protected String getMaster() {
@@ -231,8 +226,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 		// otherwise, host referenced in URI
 		CrawlHost h = ServerCacheUtil.getHostFor(serverCache, curi.getUURI());
 		if (h == null) {
-			throw new NullPointerException("Crawlhost is null for " + curi
-					+ " " + curi.getVia());
+			throw new NullPointerException("Crawlhost is null for " + curi + " " + curi.getVia());
 		}
 		InetAddress a = h.getIP();
 		if (a == null) {
@@ -305,8 +299,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 				// and look it up to see if it already exists...
 				if (ht.getRow(row) != null && !ht.getRow(row).isEmpty()) {
 					if (LOG.isTraceEnabled()) {
-						LOG
-								.trace("Not Writing "
+						LOG.trace("Not Writing "
 										+ url
 										+ " since rowkey: "
 										+ row.toString()
@@ -315,8 +308,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 					return false;
 				}
 			} catch (IOException e) {
-				LOG
-						.error("Failed to determine if record: "
+				LOG.error("Failed to determine if record: "
 								+ row.toString()
 								+ " should be written or not, deciding not to write the record: \n"
 								+ e.getMessage());
@@ -325,8 +317,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 				try {
 					getPool().returnFile(writer);
 				} catch (IOException e) {
-					LOG
-							.error("Failed to add back writer to the pool after checking for existing rowkey: "
+					LOG.error("Failed to add back writer to the pool after checking for existing rowkey: "
 									+ row.toString() + "\n" + e.getMessage());
 					return false;
 				}
@@ -335,19 +326,14 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 		return true;
 	}
 
-	protected ProcessResult write(final ProcessorURI curi, long recordLength,
-			InputStream in, String ip) throws IOException {
+	protected ProcessResult write(final ProcessorURI curi, long recordLength, InputStream in, String ip) throws IOException {
 		WriterPoolMember writer = getPool().borrowFile();
 		long position = writer.getPosition();
 		HBaseWriter w = (HBaseWriter) writer;
 		try {
-			w
-					.write(curi, getHostAddress(curi), curi.getRecorder()
-							.getRecordedOutput(), curi.getRecorder()
-							.getRecordedInput());
+			w.write(curi, getHostAddress(curi), curi.getRecorder().getRecordedOutput(), curi.getRecorder().getRecordedInput());
 		} finally {
-			setTotalBytesWritten(getTotalBytesWritten()
-					+ (writer.getPosition() - position));
+			setTotalBytesWritten(getTotalBytesWritten() + (writer.getPosition() - position));
 			getPool().returnFile(writer);
 		}
 		return checkBytesWritten(curi);
