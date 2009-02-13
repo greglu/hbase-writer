@@ -255,6 +255,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 	protected boolean shouldWrite(ProcessorURI curi) {
 		boolean retVal;
 		String scheme = curi.getUURI().getScheme().toLowerCase();
+		// determine the return value of the uri request
 		if (scheme.equals("dns")) {
 			retVal = curi.getFetchStatus() == FetchStatusCodes.S_DNS_SUCCESS;
 		} else if (scheme.equals("http") || scheme.equals("https")) {
@@ -272,6 +273,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 			return false;
 		}
 
+		// If the content exceeds the maxContentSize, then dont write.
 		if (curi.getContentSize() > this.maxContentSize) {
 			// content size is too large
 			curi.getAnnotations().add("unwritten:size");
@@ -288,18 +290,19 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 			try {
 				writer = getPool().borrowFile();
 			} catch (IOException e1) {
+				LOG.error("No writer could be gotten from the pool: " + getPool().toString() 
+								+ " - exception is: \n" + e1.getMessage());
 				return false;
 			}
-			HBaseWriter w = (HBaseWriter) writer;
-			HTable ht = w.getClient();
+			HTable ht = ((HBaseWriter) writer).getClient();
 			// Here we can generate the rowkey for this uri ...
 			String url = curi.toString();
 			String row = Keying.createKey(url);
 			try {
 				// and look it up to see if it already exists...
 				if (ht.getRow(row) != null && !ht.getRow(row).isEmpty()) {
-					if (LOG.isTraceEnabled()) {
-						LOG.trace("Not Writing "
+					if (LOG.isDebugEnabled()) {
+						LOG.debug("Not Writing "
 										+ url
 										+ " since rowkey: "
 										+ row.toString()
@@ -323,6 +326,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 				}
 			}
 		}
+		// all tests pass, return true to write the content locally.
 		return true;
 	}
 
