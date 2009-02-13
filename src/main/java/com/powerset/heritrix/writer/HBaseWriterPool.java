@@ -29,31 +29,29 @@ import org.archive.io.DefaultWriterPoolSettings;
 import org.archive.io.WriterPool;
 import org.archive.io.WriterPoolMember;
 
-
 /**
  * A pool of HBaseWriters.
  */
 public class HBaseWriterPool extends WriterPool {
-  /**
-   * Constructor
-   * @param poolMaximumActive
-   * @param poolMaximumWait
-   */
-  public HBaseWriterPool(final String master, final String table,
-      final int poolMaximumActive, final int poolMaximumWait) {
-    // Below is hard to follow.  Its invocation of this classes super
-    // constructor passing a serial, an instance of BasePoolable.. that
-    // is defined in line, followed by settings, max and wait.
-    super(new AtomicInteger(), new BasePoolableObjectFactory() {
-      public Object makeObject() throws Exception {
-        return new HBaseWriter(master, table);
-      }
+	/**
+	 * Constructor
+	 * 
+	 * @param poolMaximumActive
+	 * @param poolMaximumWait
+	 */
+	public HBaseWriterPool(final String master, final String table, final int poolMaximumActive, final int poolMaximumWait) {
+		// Below is hard to follow. Its invocation of this classes super
+		// constructor passing a serial, an instance of BasePoolable.. that
+		// is defined in line, followed by settings, max and wait.
+		super(new AtomicInteger(), new BasePoolableObjectFactory() {
+			public Object makeObject() throws Exception {
+				return new HBaseWriter(master, table);
+			}
 
-      public void destroyObject(Object arcWriter)
-      throws Exception {
-        ((WriterPoolMember)arcWriter).close();
-        super.destroyObject(arcWriter);
-      }
-    }, new DefaultWriterPoolSettings(), poolMaximumActive, poolMaximumWait);
-  }
+			public void destroyObject(Object arcWriter) throws Exception {
+				((WriterPoolMember) arcWriter).close();
+				super.destroyObject(arcWriter);
+			}
+		}, new DefaultWriterPoolSettings(), poolMaximumActive, poolMaximumWait);
+	}
 }
