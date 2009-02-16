@@ -301,12 +301,12 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 			try {
 				// and look it up to see if it already exists...
 				if (ht.getRow(row) != null && !ht.getRow(row).isEmpty()) {
-					if (LOG.isDebugEnabled()) {
-						LOG.debug("Not Writing "
-										+ url
-										+ " since rowkey: "
-										+ row.toString()
-										+ " already exists and onlyWriteNewRecords is enabled.");
+					if (LOG.isTraceEnabled()) {
+						LOG.trace("Not Writing "
+									+ url
+									+ " since rowkey: "
+									+ row.toString()
+									+ " already exists and onlyWriteNewRecords is enabled.");
 					}
 					return false;
 				}
