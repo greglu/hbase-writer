@@ -29,15 +29,19 @@ import org.archive.io.DefaultWriterPoolSettings;
 import org.archive.io.WriterPool;
 import org.archive.io.WriterPoolMember;
 
+// TODO: Auto-generated Javadoc
 /**
  * A pool of HBaseWriters.
  */
 public class HBaseWriterPool extends WriterPool {
+	
 	/**
-	 * Constructor
+	 * Constructor.
 	 * 
-	 * @param poolMaximumActive
-	 * @param poolMaximumWait
+	 * @param poolMaximumActive the pool maximum active
+	 * @param poolMaximumWait the pool maximum wait
+	 * @param master the master
+	 * @param table the table
 	 */
 	public HBaseWriterPool(final String master, final String table, final int poolMaximumActive, final int poolMaximumWait) {
 		// Below is hard to follow. Its invocation of this classes super

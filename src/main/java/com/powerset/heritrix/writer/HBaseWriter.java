@@ -43,6 +43,7 @@ import org.archive.io.ReplayInputStream;
 import org.archive.io.WriterPoolMember;
 import org.archive.modules.ProcessorURI;
 
+// TODO: Auto-generated Javadoc
 /**
  * Write to HBase. Puts content into the 'content:' column and all else into the
  * 'curi:' column family. Makes a row key of an url transformation. Creates
@@ -52,25 +53,51 @@ import org.archive.modules.ProcessorURI;
  * Limitations: Hard-coded table schema.
  */
 public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstants {
+	
+	/** The LOG. */
 	private final Logger LOG = Logger.getLogger(this.getClass().getName());
+	
+	/** The client. */
 	private final HTable client;
 	// TODO: make this variable configurable in the heritrix sheet:
 	// CONTENT_COLUMN_FAMILY
+	/** The Constant CONTENT_COLUMN_FAMILY. */
 	public static final String CONTENT_COLUMN_FAMILY = "content:";
 	// TODO: make this variable configurable in the heritrix sheet:
 	// CONTENT_COLUMN
+	/** The Constant CONTENT_COLUMN. */
 	public static final String CONTENT_COLUMN = CONTENT_COLUMN_FAMILY + "raw_data";
 	// TODO: make this variable configurable in the heritrix sheet:
 	// CURI_COLUMN_FAMILY
+	/** The Constant CURI_COLUMN_FAMILY. */
 	public static final String CURI_COLUMN_FAMILY = "curi:";
 
+	/** The Constant IP_COLUMN. */
 	private static final String IP_COLUMN = CURI_COLUMN_FAMILY + "ip";
+	
+	/** The Constant PATH_FROM_SEED_COLUMN. */
 	private static final String PATH_FROM_SEED_COLUMN = CURI_COLUMN_FAMILY + "path-from-seed";
+	
+	/** The Constant IS_SEED_COLUMN. */
 	private static final String IS_SEED_COLUMN = CURI_COLUMN_FAMILY + "is-seed";
+	
+	/** The Constant VIA_COLUMN. */
 	private static final String VIA_COLUMN = CURI_COLUMN_FAMILY + "via";
+	
+	/** The Constant URL_COLUMN. */
 	private static final String URL_COLUMN = CURI_COLUMN_FAMILY + "url";
+	
+	/** The Constant REQUEST_COLUMN. */
 	private static final String REQUEST_COLUMN = CURI_COLUMN_FAMILY + "request";
 
+	/**
+	 * Instantiates a new h base writer.
+	 * 
+	 * @param master the master
+	 * @param table the table
+	 * 
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public HBaseWriter(final String master, final String table) throws IOException {
 		super(null, null, null, false, null);
 		if (table == null || table.length() <= 0) {
@@ -84,10 +111,23 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 		this.client = new HTable(c, table);
 	}
 
+	/**
+	 * Gets the client.
+	 * 
+	 * @return the client
+	 */
 	public HTable getClient() {
 		return client;
 	}
 
+	/**
+	 * Creates the crawl table.
+	 * 
+	 * @param c the c
+	 * @param table the table
+	 * 
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	protected void createCrawlTable(final HBaseConfiguration c, final String table) throws IOException {
 		HBaseAdmin admin = new HBaseAdmin(c);
 		if (admin.tableExists(table)) {
@@ -101,14 +141,14 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	}
 
 	/**
-	 * @param curi
-	 *            URI of crawled document
-	 * @param ip
-	 *            IP of remote machine.
-	 * @param ros
-	 *            recording input stream that captured the response
-	 * @param ris
-	 *            recording output stream that captured the GET request
+	 * Write.
+	 * 
+	 * @param curi URI of crawled document
+	 * @param ip IP of remote machine.
+	 * @param ros recording input stream that captured the response
+	 * @param ris recording output stream that captured the GET request
+	 * 
+	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	public void write(final ProcessorURI curi, final String ip, final RecordingOutputStream ros, final RecordingInputStream ris)
 			throws IOException {
@@ -152,7 +192,7 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	 * and storing the results in new column families/columns using the batch
 	 * update object.
 	 * 
-	 * @param bu
+	 * @param bu the bu
 	 */
 	protected void processContent(BatchUpdate bu) {
 		// byte[] content = bu.get(CONTENT_COLUMN);
@@ -172,6 +212,16 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	 * @param baos
 	 * 
 	 * @throws IOException
+	 */
+	/**
+	 * Adds the.
+	 * 
+	 * @param bu the bu
+	 * @param key the key
+	 * @param ris the ris
+	 * @param size the size
+	 * 
+	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	private void add(final BatchUpdate bu, final String key, final ReplayInputStream ris, final int size) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(size);

@@ -51,108 +51,104 @@ import org.archive.state.KeyManager;
 import org.archive.state.StateProvider;
 import org.archive.util.IoUtils;
 
+// TODO: Auto-generated Javadoc
 /**
  * An <a href="http://crawler.archive.org">heritrix2</a> processor that writes
  * to <a href="http://hbase.org">Hadoop HBase</a>.
  */
 public class HBaseWriterProcessor extends Processor implements Initializable,
 		Closeable {
+	
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 7166781798179114353L;
 
+	/** The LOG. */
 	private final Logger LOG = Logger.getLogger(this.getClass().getName());
 
-	/**
-	 * Location of hbase master.
-	 */
+	/** Location of hbase master. */
 	@Immutable
 	public static final Key<String> MASTER = Key.make(HConstants.DEFAULT_MASTER_ADDRESS);
 
-	/**
-	 * HBase tableName to crawl into.
-	 */
+	/** HBase tableName to crawl into. */
 	@Immutable
 	public static final Key<String> TABLE = Key.make("crawl");
 
-	/**
-	 * If set to true, then only write urls that are new rowkey records.
-	 * Default is false, which will write all urls to the HBase table.
-	 * 
-	 * Heritrix is good about not hitting the same url twice, so this feature is
-	 * to ensure that you can run multiple sessions of the same crawl
-	 * configuration and not fetch the same url more than once. You may just
-	 * want to crawl a site to see what new urls have been added over time, or
-	 * continue where you left off on a terminated crawl.
-	 */
+	/** If set to true, then only write urls that are new rowkey records. Default is false, which will write all urls to the HBase table.  Heritrix is good about not hitting the same url twice, so this feature is to ensure that you can run multiple sessions of the same crawl configuration and not fetch the same url more than once. You may just want to crawl a site to see what new urls have been added over time, or continue where you left off on a terminated crawl. */
 	@Immutable
 	public static final Key<Boolean> WRITE_ONLY_NEW_RECORDS = Key.make(false);
 	
-	/**
-	 * If set to true, then only process urls that are new rowkey records.
-	 * Default is false, which will process all urls to the HBase table.
-	 * 
-	 * In this mode, Heritrix wont even download and traverse the url if it exists in the HBase table.
-	 */
+	/** If set to true, then only process urls that are new rowkey records. Default is false, which will process all urls to the HBase table.  In this mode, Heritrix wont even download and traverse the url if it exists in the HBase table. */
 	@Immutable
 	public static final Key<Boolean> PROCESS_ONLY_NEW_RECORDS = Key.make(false);
 
-	/**
-	 * Maximum active files in pool. This setting cannot be varied over the life
-	 * of a crawl.
-	 */
+	/** Maximum active files in pool. This setting cannot be varied over the life of a crawl. */
 	@Immutable
 	final public static Key<Integer> POOL_MAX_ACTIVE = Key.make(WriterPool.DEFAULT_MAX_ACTIVE);
 
-	/**
-	 * Maximum time to wait on pool element (milliseconds). This setting cannot
-	 * be varied over the life of a crawl.
-	 */
+	/** Maximum time to wait on pool element (milliseconds). This setting cannot be varied over the life of a crawl. */
 	@Immutable
 	final public static Key<Integer> POOL_MAX_WAIT = Key.make(WriterPool.DEFAULT_MAXIMUM_WAIT);
 
+	/** The Constant SERVER_CACHE. */
 	@Immutable
 	final public static Key<ServerCache> SERVER_CACHE = Key.makeAuto(ServerCache.class);
 
-	/**
-	 * Maximum allowable content size.
-	 */
+	/** Maximum allowable content size. */
 	@Immutable
 	final public static Key<Integer> CONTENT_MAX_SIZE = Key.make(20 * 1024 * 1024);
 
-	/**
-	 * Total file bytes to write to disk. Once the size of all files on disk has
-	 * exceeded this limit, this processor will stop the crawler. A value of
-	 * zero means no upper limit.
-	 */
+	/** Total file bytes to write to disk. Once the size of all files on disk has exceeded this limit, this processor will stop the crawler. A value of zero means no upper limit. */
 	@Immutable
 	@Expert
 	final public static Key<Long> TOTAL_BYTES_TO_WRITE = Key.make(0L);
 
-	/**
-	 * Reference to pool.
-	 */
+	/** Reference to pool. */
 	private transient WriterPool pool = null;
+	
+	/** The server cache. */
 	private ServerCache serverCache;
+	
+	/** The max active. */
 	private int maxActive;
+	
+	/** The max wait. */
 	private int maxWait;
+	
+	/** The max content size. */
 	private int maxContentSize;
+	
+	/** The master. */
 	private String master;
+	
+	/** The table name. */
 	private String tableName;
+	
+	/** The only write new records. */
 	private boolean onlyWriteNewRecords;
+	
+	/** The only process new records. */
 	private boolean onlyProcessNewRecords;
 
 	/*
 	 * Total number of bytes written to disc.
 	 */
+	/** The total bytes written. */
 	private long totalBytesWritten = 0;
 
 	static {
 		KeyManager.addKeys(HBaseWriterProcessor.class);
 	}
 
+	/**
+	 * Instantiates a new h base writer processor.
+	 */
 	public HBaseWriterProcessor() {
 		super();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.archive.state.Initializable#initialTasks(org.archive.state.StateProvider)
+	 */
 	public synchronized void initialTasks(StateProvider context) {
 		this.serverCache = context.get(this, SERVER_CACHE);
 		this.maxActive = context.get(this, POOL_MAX_ACTIVE).intValue();
@@ -165,42 +161,88 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 		setupPool();
 	}
 
+	/**
+	 * Gets the master.
+	 * 
+	 * @return the master
+	 */
 	protected String getMaster() {
 		return this.master;
 	}
 
+	/**
+	 * Gets the table.
+	 * 
+	 * @return the table
+	 */
 	protected String getTable() {
 		return this.tableName;
 	}
 
+	/**
+	 * Setup pool.
+	 */
 	protected void setupPool() {
 		setPool(new HBaseWriterPool(getMaster(), getTable(), getMaxActive(), getMaxWait()));
 	}
 
+	/**
+	 * Gets the max active.
+	 * 
+	 * @return the max active
+	 */
 	protected int getMaxActive() {
 		return maxActive;
 	}
 
+	/**
+	 * Gets the max wait.
+	 * 
+	 * @return the max wait
+	 */
 	protected int getMaxWait() {
 		return maxWait;
 	}
 
+	/**
+	 * Sets the pool.
+	 * 
+	 * @param pool the new pool
+	 */
 	protected void setPool(WriterPool pool) {
 		this.pool = pool;
 	}
 
+	/**
+	 * Gets the pool.
+	 * 
+	 * @return the pool
+	 */
 	protected WriterPool getPool() {
 		return this.pool;
 	}
 
+	/**
+	 * Gets the total bytes written.
+	 * 
+	 * @return the total bytes written
+	 */
 	protected long getTotalBytesWritten() {
 		return this.totalBytesWritten;
 	}
 
+	/**
+	 * Sets the total bytes written.
+	 * 
+	 * @param b the new total bytes written
+	 */
 	protected void setTotalBytesWritten(final long b) {
 		this.totalBytesWritten = b;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.archive.modules.Processor#innerProcessResult(org.archive.modules.ProcessorURI)
+	 */
 	protected ProcessResult innerProcessResult(final ProcessorURI puri) {
 		ProcessorURI curi = puri;
 		long recordLength = getRecordedSize(curi);
@@ -224,8 +266,8 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 	 * Return IP address of given URI suitable for recording (as in a classic
 	 * ARC 5-field header line).
 	 * 
-	 * @param curi
-	 *            ProcessorURI
+	 * @param curi ProcessorURI
+	 * 
 	 * @return String of IP address
 	 */
 	protected String getHostAddress(ProcessorURI curi) {
@@ -259,8 +301,8 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 	 * Whether the given ProcessorURI should be written to archive files.
 	 * Annotates ProcessorURI with a reason for any negative answer.
 	 * 
-	 * @param curi
-	 *            ProcessorURI
+	 * @param curi ProcessorURI
+	 * 
 	 * @return true if URI should be written; false otherwise
 	 */
 	protected boolean shouldWrite(ProcessorURI curi) {
@@ -305,6 +347,13 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 		return true;
 	}
 	
+	/**
+	 * Determine if the given uri exists as a rowkey in the configured hbase table.
+	 * 
+	 * @param curi the curi
+	 * 
+	 * @return true, if checks if is record new
+	 */
 	private boolean isRecordNew(ProcessorURI curi) {
 		WriterPoolMember writer;
 		try {
@@ -321,8 +370,8 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 		try {
 			// and look it up to see if it already exists...
 			if (ht.getRow(row) != null && !ht.getRow(row).isEmpty()) {
-				if (LOG.isTraceEnabled()) {
-					LOG.trace("Not Writing "
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("Not Writing "
 								+ url
 								+ " since rowkey: "
 								+ row.toString()
@@ -348,6 +397,18 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 		return true;
 	}
 
+	/**
+	 * Write.
+	 * 
+	 * @param curi the curi
+	 * @param recordLength the record length
+	 * @param in the in
+	 * @param ip the ip
+	 * 
+	 * @return the process result
+	 * 
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	protected ProcessResult write(final ProcessorURI curi, long recordLength, InputStream in, String ip) throws IOException {
 		WriterPoolMember writer = getPool().borrowFile();
 		long position = writer.getPosition();
@@ -361,6 +422,13 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 		return checkBytesWritten(curi);
 	}
 
+	/**
+	 * Check bytes written.
+	 * 
+	 * @param context the context
+	 * 
+	 * @return the process result
+	 */
 	protected ProcessResult checkBytesWritten(StateProvider context) {
 		long max = context.get(this, TOTAL_BYTES_TO_WRITE).longValue();
 		if (max <= 0) {
@@ -373,6 +441,9 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 		return ProcessResult.PROCEED;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.archive.modules.Processor#innerProcess(org.archive.modules.ProcessorURI)
+	 */
 	protected void innerProcess(ProcessorURI puri) {
 		throw new AssertionError();
 	}
@@ -383,10 +454,16 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 		KeyManager.addKeys(HBaseWriterProcessor.class);
 	}
 
+	/* (non-Javadoc)
+	 * @see java.io.Closeable#close()
+	 */
 	public void close() {
 		this.pool.close();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.archive.modules.Processor#shouldProcess(org.archive.modules.ProcessorURI)
+	 */
 	@Override
 	protected boolean shouldProcess(ProcessorURI uri) {
 		ProcessorURI curi = uri;

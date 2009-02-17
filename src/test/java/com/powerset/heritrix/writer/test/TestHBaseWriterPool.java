@@ -6,20 +6,39 @@ import org.testng.annotations.Test;
 
 import com.powerset.heritrix.writer.HBaseWriterPool;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class TestHBaseWriterPool.
+ */
 public class TestHBaseWriterPool {
+	
+	/** The master. */
 	String master = "locahost";
+	
+	/** The table. */
 	String table = "test";
+	
+	/** The pool maximum active. */
 	int poolMaximumActive = 10;
+	
+	/** The pool maximum wait. */
 	int poolMaximumWait = 20;
 
+	/** The hwp. */
 	HBaseWriterPool hwp;
 
+	/**
+	 * Creates the h base writer pool.
+	 */
 	@BeforeClass()
 	public void createHBaseWriterPool() {
 		hwp = new HBaseWriterPool(master, table, poolMaximumActive,
 				poolMaximumWait);
 	}
 
+	/**
+	 * Test h base writer pool integrity.
+	 */
 	@Test()
 	public void testHBaseWriterPoolIntegrity() {
 		Assert.assertNotNull(hwp);

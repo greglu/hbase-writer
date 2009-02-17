@@ -7,18 +7,32 @@ import org.testng.annotations.Test;
 
 import com.powerset.heritrix.writer.HBaseWriter;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class TestHBaseWriter.
+ */
 public class TestHBaseWriter {
+	
+	/** The master. */
 	String master = "localhost:60000";
+	
+	/** The table. */
 	String table = "test";
+	
+	/** The pool maximum active. */
 	int poolMaximumActive = 10;
+	
+	/** The pool maximum wait. */
 	int poolMaximumWait = 20;
 
+	/** The hw. */
 	HBaseWriter hw;
 
 	/**
 	 * Test that bad table values cannot be used when creating an instance of
 	 * HbaseWriter.
 	 * 
+	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	@Test()
 	public void testCreateHBaseWriter() throws IOException {
