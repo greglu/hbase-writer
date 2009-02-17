@@ -74,8 +74,8 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 	public static final Key<String> TABLE = Key.make("crawl");
 
 	/**
-	 * If set to true, then only process urls that are new rowkey records.
-	 * Default is false, to collect all urls.
+	 * If set to true, then only write urls that are new rowkey records.
+	 * Default is false, which will write all urls to the HBase table.
 	 * 
 	 * Heritrix is good about not hitting the same url twice, so this feature is
 	 * to ensure that you can run multiple sessions of the same crawl
@@ -84,7 +84,16 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 	 * continue where you left off on a terminated crawl.
 	 */
 	@Immutable
-	public static final Key<Boolean> ONLY_NEW_RECORDS = Key.make(false);
+	public static final Key<Boolean> WRITE_ONLY_NEW_RECORDS = Key.make(false);
+	
+	/**
+	 * If set to true, then only process urls that are new rowkey records.
+	 * Default is false, which will process all urls to the HBase table.
+	 * 
+	 * In this mode, Heritrix wont even download and traverse the url if it exists in the HBase table.
+	 */
+	@Immutable
+	public static final Key<Boolean> PROCESS_ONLY_NEW_RECORDS = Key.make(false);
 
 	/**
 	 * Maximum active files in pool. This setting cannot be varied over the life
@@ -129,6 +138,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 	private String master;
 	private String tableName;
 	private boolean onlyWriteNewRecords;
+	private boolean onlyProcessNewRecords;
 
 	/*
 	 * Total number of bytes written to disc.
@@ -149,7 +159,8 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 		this.maxWait = context.get(this, POOL_MAX_WAIT).intValue();
 		this.master = context.get(this, MASTER);
 		this.tableName = context.get(this, TABLE);
-		this.onlyWriteNewRecords = context.get(this, ONLY_NEW_RECORDS).booleanValue();
+		this.onlyWriteNewRecords = context.get(this, WRITE_ONLY_NEW_RECORDS).booleanValue();
+		this.onlyProcessNewRecords = context.get(this, PROCESS_ONLY_NEW_RECORDS).booleanValue();
 		this.maxContentSize = context.get(this, CONTENT_MAX_SIZE).intValue();
 		setupPool();
 	}
@@ -286,47 +297,54 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 		// If onlyWriteNewRecords is enabled and the given rowkey has cell data,
 		// don't write the record.
 		if (this.onlyWriteNewRecords) {
-			WriterPoolMember writer;
-			try {
-				writer = getPool().borrowFile();
-			} catch (IOException e1) {
-				LOG.error("No writer could be gotten from the pool: " + getPool().toString() 
-								+ " - exception is: \n" + e1.getMessage());
+			if (!this.isRecordNew(curi)) {
 				return false;
-			}
-			HTable ht = ((HBaseWriter) writer).getClient();
-			// Here we can generate the rowkey for this uri ...
-			String url = curi.toString();
-			String row = Keying.createKey(url);
-			try {
-				// and look it up to see if it already exists...
-				if (ht.getRow(row) != null && !ht.getRow(row).isEmpty()) {
-					if (LOG.isTraceEnabled()) {
-						LOG.trace("Not Writing "
-									+ url
-									+ " since rowkey: "
-									+ row.toString()
-									+ " already exists and onlyWriteNewRecords is enabled.");
-					}
-					return false;
-				}
-			} catch (IOException e) {
-				LOG.error("Failed to determine if record: "
-								+ row.toString()
-								+ " should be written or not, deciding not to write the record: \n"
-								+ e.getMessage());
-				return false;
-			} finally {
-				try {
-					getPool().returnFile(writer);
-				} catch (IOException e) {
-					LOG.error("Failed to add back writer to the pool after checking for existing rowkey: "
-									+ row.toString() + "\n" + e.getMessage());
-					return false;
-				}
 			}
 		}
 		// all tests pass, return true to write the content locally.
+		return true;
+	}
+	
+	private boolean isRecordNew(ProcessorURI curi) {
+		WriterPoolMember writer;
+		try {
+			writer = getPool().borrowFile();
+		} catch (IOException e1) {
+			LOG.error("No writer could be gotten from the pool: " + getPool().toString() 
+							+ " - exception is: \n" + e1.getMessage());
+			return false;
+		}
+		HTable ht = ((HBaseWriter) writer).getClient();
+		// Here we can generate the rowkey for this uri ...
+		String url = curi.toString();
+		String row = Keying.createKey(url);
+		try {
+			// and look it up to see if it already exists...
+			if (ht.getRow(row) != null && !ht.getRow(row).isEmpty()) {
+				if (LOG.isTraceEnabled()) {
+					LOG.trace("Not Writing "
+								+ url
+								+ " since rowkey: "
+								+ row.toString()
+								+ " already exists and onlyWriteNewRecords is enabled.");
+				}
+				return false;
+			}
+		} catch (IOException e) {
+			LOG.error("Failed to determine if record: "
+							+ row.toString()
+							+ " should be written or not, deciding not to write the record: \n"
+							+ e.getMessage());
+			return false;
+		} finally {
+			try {
+				getPool().returnFile(writer);
+			} catch (IOException e) {
+				LOG.error("Failed to add back writer to the pool after checking for existing rowkey: "
+								+ row.toString() + "\n" + e.getMessage());
+				return false;
+			}
+		}
 		return true;
 	}
 
@@ -383,6 +401,14 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 			// getContentSize() should be > 0 if any material (even just
 			// HTTP headers with zero-length body is available.
 			return false;
+		}
+		
+		// If onlyProcessNewRecords is enabled and the given rowkey has cell data,
+		// don't write the record.
+		if (this.onlyProcessNewRecords) {
+			if (!this.isRecordNew(curi)) {
+				return false;
+			}
 		}
 
 		// If we make it here, then we passed all our checks and we can assume
