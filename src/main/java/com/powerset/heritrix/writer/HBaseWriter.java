@@ -45,9 +45,22 @@ import org.archive.modules.ProcessorURI;
 
 // TODO: Auto-generated Javadoc
 /**
- * Write to HBase. Puts content into the 'content:' column and all else into the
+ * Write crawled content as records to an HBase table. 
+ * Puts content into the 'content:raw_data' column and all else into the
  * 'curi:' column family. Makes a row key of an url transformation. Creates
  * table if it does not exist.
+ * 
+	The following is a complete list of columns that get written to by default:
+	
+	content:raw_data 
+	
+	curi:ip
+	curi:path-from-seed
+	curi:is-seed
+	curi:via
+	curi:url
+	curi:request
+	
  * 
  * <p>
  * Limitations: Hard-coded table schema.
@@ -91,7 +104,7 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	private static final String REQUEST_COLUMN = CURI_COLUMN_FAMILY + "request";
 
 	/**
-	 * Instantiates a new h base writer.
+	 * Instantiates a new HBaseWriter for the WriterPool to use in heritrix2.
 	 * 
 	 * @param master the master
 	 * @param table the table
@@ -112,7 +125,7 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	}
 
 	/**
-	 * Gets the client.
+	 * Gets the HTable client.
 	 * 
 	 * @return the client
 	 */
@@ -121,7 +134,7 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	}
 
 	/**
-	 * Creates the crawl table.
+	 * Creates the crawl table in HBase.
 	 * 
 	 * @param c the c
 	 * @param table the table
@@ -141,7 +154,8 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	}
 
 	/**
-	 * Write.
+	 * Write the crawled output to the configured HBase table.
+	 * Write each row key as the url with reverse domain and optionally process any content.
 	 * 
 	 * @param curi URI of crawled document
 	 * @param ip IP of remote machine.
@@ -177,10 +191,10 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 		}
 		// Response
 		add(bu, CONTENT_COLUMN, ris.getReplayInputStream(), (int) ris.getSize());
-		// process the content (optional)
-		processContent(bu);
 		// Set crawl time.
 		bu.setTimestamp(curi.getFetchBeginTime());
+		// process the content (optional)
+		processContent(bu);
 		this.client.commit(bu);
 	}
 
