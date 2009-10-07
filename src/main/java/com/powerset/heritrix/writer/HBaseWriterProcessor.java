@@ -51,13 +51,11 @@ import org.archive.state.KeyManager;
 import org.archive.state.StateProvider;
 import org.archive.util.IoUtils;
 
-// TODO: Auto-generated Javadoc
 /**
  * An <a href="http://crawler.archive.org">heritrix2</a> processor that writes
  * to <a href="http://hbase.org">Hadoop HBase</a>.
  */
-public class HBaseWriterProcessor extends Processor implements Initializable,
-		Closeable {
+public class HBaseWriterProcessor extends Processor implements Initializable, Closeable {
 	
 	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 7166781798179114353L;
@@ -129,10 +127,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 	/** The only process new records. */
 	private boolean onlyProcessNewRecords;
 
-	/*
-	 * Total number of bytes written to disc.
-	 */
-	/** The total bytes written. */
+	/** The total bytes written to disk. */
 	private long totalBytesWritten = 0;
 
 	static {
@@ -140,7 +135,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 	}
 
 	/**
-	 * Instantiates a new h base writer processor.
+	 * Instantiates a new HBaseWriterProcessor.
 	 */
 	public HBaseWriterProcessor() {
 		super();
@@ -159,85 +154,6 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 		this.onlyProcessNewRecords = context.get(this, PROCESS_ONLY_NEW_RECORDS).booleanValue();
 		this.maxContentSize = context.get(this, CONTENT_MAX_SIZE).intValue();
 		setupPool();
-	}
-
-	/**
-	 * Gets the master.
-	 * 
-	 * @return the master
-	 */
-	protected String getMaster() {
-		return this.master;
-	}
-
-	/**
-	 * Gets the table.
-	 * 
-	 * @return the table
-	 */
-	protected String getTable() {
-		return this.tableName;
-	}
-
-	/**
-	 * Setup pool.
-	 */
-	protected void setupPool() {
-		setPool(new HBaseWriterPool(getMaster(), getTable(), getMaxActive(), getMaxWait()));
-	}
-
-	/**
-	 * Gets the max active.
-	 * 
-	 * @return the max active
-	 */
-	protected int getMaxActive() {
-		return maxActive;
-	}
-
-	/**
-	 * Gets the max wait.
-	 * 
-	 * @return the max wait
-	 */
-	protected int getMaxWait() {
-		return maxWait;
-	}
-
-	/**
-	 * Sets the pool.
-	 * 
-	 * @param pool the new pool
-	 */
-	protected void setPool(WriterPool pool) {
-		this.pool = pool;
-	}
-
-	/**
-	 * Gets the pool.
-	 * 
-	 * @return the pool
-	 */
-	protected WriterPool getPool() {
-		return this.pool;
-	}
-
-	/**
-	 * Gets the total bytes written.
-	 * 
-	 * @return the total bytes written
-	 */
-	protected long getTotalBytesWritten() {
-		return this.totalBytesWritten;
-	}
-
-	/**
-	 * Sets the total bytes written.
-	 * 
-	 * @param b the new total bytes written
-	 */
-	protected void setTotalBytesWritten(final long b) {
-		this.totalBytesWritten = b;
 	}
 
 	/* (non-Javadoc)
@@ -297,6 +213,35 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 		return h.getIP().getHostAddress();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.archive.modules.Processor#shouldProcess(org.archive.modules.ProcessorURI)
+	 */
+	@Override
+	protected boolean shouldProcess(ProcessorURI uri) {
+		ProcessorURI curi = uri;
+		// If failure, or we haven't fetched the resource yet, return
+		if (curi.getFetchStatus() <= 0) {
+			return false;
+		}
+
+		// If no recorded content at all, don't write record.
+		long recordLength = curi.getContentSize();
+		if (recordLength <= 0) {
+			// getContentSize() should be > 0 if any material (even just
+			// HTTP headers with zero-length body is available.
+			return false;
+		}
+		
+		// If onlyProcessNewRecords is enabled and the given rowkey has cell data,
+		// don't write the record.
+		if (this.onlyProcessNewRecords) {
+			return this.isRecordNew(curi);
+		}
+		// If we make it here, then we passed all our checks and we can assume
+		// we should write the record.
+		return true;
+	}
+	
 	/**
 	 * Whether the given ProcessorURI should be written to archive files.
 	 * Annotates ProcessorURI with a reason for any negative answer.
@@ -339,9 +284,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 		// If onlyWriteNewRecords is enabled and the given rowkey has cell data,
 		// don't write the record.
 		if (this.onlyWriteNewRecords) {
-			if (!this.isRecordNew(curi)) {
-				return false;
-			}
+			return this.isRecordNew(curi);
 		}
 		// all tests pass, return true to write the content locally.
 		return true;
@@ -410,14 +353,14 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	protected ProcessResult write(final ProcessorURI curi, long recordLength, InputStream in, String ip) throws IOException {
-		WriterPoolMember writer = getPool().borrowFile();
-		long position = writer.getPosition();
-		HBaseWriter w = (HBaseWriter) writer;
+		WriterPoolMember writerPoolMember = getPool().borrowFile();
+		long writerPoolMemberPosition = writerPoolMember.getPosition();
+		HBaseWriter hbaseWriter = (HBaseWriter) writerPoolMember;
 		try {
-			w.write(curi, getHostAddress(curi), curi.getRecorder().getRecordedOutput(), curi.getRecorder().getRecordedInput());
+			hbaseWriter.write(curi, getHostAddress(curi), curi.getRecorder().getRecordedOutput(), curi.getRecorder().getRecordedInput());
 		} finally {
-			setTotalBytesWritten(getTotalBytesWritten() + (writer.getPosition() - position));
-			getPool().returnFile(writer);
+			setTotalBytesWritten(getTotalBytesWritten() + (writerPoolMember.getPosition() - writerPoolMemberPosition));
+			getPool().returnFile(writerPoolMember);
 		}
 		return checkBytesWritten(curi);
 	}
@@ -441,6 +384,86 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 		return ProcessResult.PROCEED;
 	}
 
+	/**
+	 * Setup pool.
+	 */
+	protected void setupPool() {
+		setPool(new HBaseWriterPool(getMaster(), getTable(), getMaxActive(), getMaxWait()));
+	}
+
+	/**
+	 * Gets the master.
+	 * 
+	 * @return the master
+	 */
+	protected String getMaster() {
+		return this.master;
+	}
+
+	/**
+	 * Gets the table.
+	 * 
+	 * @return the table
+	 */
+	protected String getTable() {
+		return this.tableName;
+	}
+
+	
+	/**
+	 * Gets the max active.
+	 * 
+	 * @return the max active
+	 */
+	protected int getMaxActive() {
+		return maxActive;
+	}
+
+	/**
+	 * Gets the max wait.
+	 * 
+	 * @return the max wait
+	 */
+	protected int getMaxWait() {
+		return maxWait;
+	}
+
+	/**
+	 * Sets the pool.
+	 * 
+	 * @param pool the new pool
+	 */
+	protected void setPool(WriterPool pool) {
+		this.pool = pool;
+	}
+
+	/**
+	 * Gets the pool.
+	 * 
+	 * @return the pool
+	 */
+	protected WriterPool getPool() {
+		return this.pool;
+	}
+
+	/**
+	 * Gets the total bytes written.
+	 * 
+	 * @return the total bytes written
+	 */
+	protected long getTotalBytesWritten() {
+		return this.totalBytesWritten;
+	}
+
+	/**
+	 * Sets the total bytes written.
+	 * 
+	 * @param b the new total bytes written
+	 */
+	protected void setTotalBytesWritten(final long b) {
+		this.totalBytesWritten = b;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.archive.modules.Processor#innerProcess(org.archive.modules.ProcessorURI)
 	 */
@@ -461,35 +484,5 @@ public class HBaseWriterProcessor extends Processor implements Initializable,
 		this.pool.close();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.archive.modules.Processor#shouldProcess(org.archive.modules.ProcessorURI)
-	 */
-	@Override
-	protected boolean shouldProcess(ProcessorURI uri) {
-		ProcessorURI curi = uri;
-		// If failure, or we haven't fetched the resource yet, return
-		if (curi.getFetchStatus() <= 0) {
-			return false;
-		}
-
-		// If no recorded content at all, don't write record.
-		long recordLength = curi.getContentSize();
-		if (recordLength <= 0) {
-			// getContentSize() should be > 0 if any material (even just
-			// HTTP headers with zero-length body is available.
-			return false;
-		}
-		
-		// If onlyProcessNewRecords is enabled and the given rowkey has cell data,
-		// don't write the record.
-		if (this.onlyProcessNewRecords) {
-			if (!this.isRecordNew(curi)) {
-				return false;
-			}
-		}
-
-		// If we make it here, then we passed all our checks and we can assume
-		// we should write the record.
-		return true;
-	}
+	
 }

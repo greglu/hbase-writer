@@ -43,7 +43,6 @@ import org.archive.io.ReplayInputStream;
 import org.archive.io.WriterPoolMember;
 import org.archive.modules.ProcessorURI;
 
-// TODO: Auto-generated Javadoc
 /**
  * Write crawled content as records to an HBase table. 
  * Puts content into the 'content:raw_data' column and all else into the
@@ -52,8 +51,7 @@ import org.archive.modules.ProcessorURI;
  * 
 	The following is a complete list of columns that get written to by default:
 	
-	content:raw_data 
-	
+	content:raw_data
 	curi:ip
 	curi:path-from-seed
 	curi:is-seed
@@ -63,7 +61,7 @@ import org.archive.modules.ProcessorURI;
 	
  * 
  * <p>
- * Limitations: Hard-coded table schema.
+ * Limitations: Hard-coded table schema.  
  */
 public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstants {
 	
@@ -77,37 +75,38 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	/** The Constant CONTENT_COLUMN_FAMILY. */
 	public static final String CONTENT_COLUMN_FAMILY = "content:";
 	// TODO: make this variable configurable in the heritrix sheet:
-	// CONTENT_COLUMN
 	/** The Constant CONTENT_COLUMN. */
 	public static final String CONTENT_COLUMN = CONTENT_COLUMN_FAMILY + "raw_data";
 	// TODO: make this variable configurable in the heritrix sheet:
 	// CURI_COLUMN_FAMILY
 	/** The Constant CURI_COLUMN_FAMILY. */
 	public static final String CURI_COLUMN_FAMILY = "curi:";
-
+	// TODO: make this variable configurable in the heritrix sheet:
 	/** The Constant IP_COLUMN. */
 	private static final String IP_COLUMN = CURI_COLUMN_FAMILY + "ip";
-	
+	// TODO: make this variable configurable in the heritrix sheet:
 	/** The Constant PATH_FROM_SEED_COLUMN. */
 	private static final String PATH_FROM_SEED_COLUMN = CURI_COLUMN_FAMILY + "path-from-seed";
-	
+	// TODO: make this variable configurable in the heritrix sheet:
 	/** The Constant IS_SEED_COLUMN. */
 	private static final String IS_SEED_COLUMN = CURI_COLUMN_FAMILY + "is-seed";
-	
+	// TODO: make this variable configurable in the heritrix sheet:
 	/** The Constant VIA_COLUMN. */
 	private static final String VIA_COLUMN = CURI_COLUMN_FAMILY + "via";
-	
+	// TODO: make this variable configurable in the heritrix sheet:
 	/** The Constant URL_COLUMN. */
 	private static final String URL_COLUMN = CURI_COLUMN_FAMILY + "url";
-	
+	// TODO: make this variable configurable in the heritrix sheet:
 	/** The Constant REQUEST_COLUMN. */
 	private static final String REQUEST_COLUMN = CURI_COLUMN_FAMILY + "request";
 
 	/**
 	 * Instantiates a new HBaseWriter for the WriterPool to use in heritrix2.
 	 * 
-	 * @param master the master
-	 * @param table the table
+	 * @param master 
+	 * 		the master address.  i.e. : hbase-master.server.example:60000
+	 * @param table 
+	 * 		the table in hbase to write to.  i.e. : webtable
 	 * 
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
@@ -185,16 +184,17 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 		if (viaStr != null && viaStr.length() > 0) {
 			bu.put(VIA_COLUMN, Bytes.toBytes(viaStr));
 		}
-		// Request
+		// Write the Crawl Request to the BatchUpdate object 
 		if (ros.getSize() > 0) {
 			add(bu, REQUEST_COLUMN, ros.getReplayInputStream(), (int) ros.getSize());
 		}
-		// Response
+		// Write the Crawl Response to the BatchUpdate object
 		add(bu, CONTENT_COLUMN, ris.getReplayInputStream(), (int) ris.getSize());
-		// Set crawl time.
+		// Set crawl time as the timestamp to the BatchUpdate object.
 		bu.setTimestamp(curi.getFetchBeginTime());
 		// process the content (optional)
 		processContent(bu);
+		// write the BatchUpdate object to the HBase table
 		this.client.commit(bu);
 	}
 
@@ -214,21 +214,8 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 		// bu.put("some:new_column", someParsedByteArray);
 	}
 
-	/*
-	 * Add ReplayInputStream to the passed BatchUpdate.
-	 * 
-	 * @param bu
-	 * 
-	 * @param key
-	 * 
-	 * @param ris
-	 * 
-	 * @param baos
-	 * 
-	 * @throws IOException
-	 */
 	/**
-	 * Adds the.
+	 * Add ReplayInputStream to the given BatchUpdate & key.
 	 * 
 	 * @param bu the bu
 	 * @param key the key
