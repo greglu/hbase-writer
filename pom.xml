@@ -382,14 +382,18 @@
      <hbase-writer.distribution-manager.releases>http://repo1.opensourcemasters.org:8081/nexus/content/repositories/releases/</hbase-writer.distribution-manager.releases>
      <hbase-writer.distribution-manager.snapshots>http://repo1.opensourcemasters.org:8081/nexus/content/repositories/snapshots/</hbase-writer.distribution-manager.snapshots>
      <hbase-writer.distribution-manager.report-site>/usr/local/www/projects.osm/hbase-writer-site/</hbase-writer.distribution-manager.report-site>
+
+     <jdk.version>1.6</jdk.version>
      
-     <heritrix.version>2.0.2</heritrix.version>
      <hadoop.version>0.20.1</hadoop.version>
      <hbase.version>0.20.0</hbase.version>
+
+     <!-- Heritrix2 dependencies, check the heritrix lib/ folder if any are missing. -->
+     <heritrix.version>2.0.2</heritrix.version>     
      <fastutil.version>5.0.7</fastutil.version>
      <overlay.commons-pool.version>1.3</overlay.commons-pool.version>
      <overlay.commons-httpclient.version>3.1</overlay.commons-httpclient.version>
-     <jdk.version>1.6</jdk.version>
+     <!-- End of Heritrix2 dependencies -->
   </properties>
   
 </project>
