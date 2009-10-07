@@ -29,7 +29,9 @@ import java.io.InputStream;
 import java.net.InetAddress;
 
 import org.apache.hadoop.hbase.HConstants;
+import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HTable;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.Keying;
 import org.apache.log4j.Logger;
 import org.archive.io.ReplayInputStream;
@@ -306,13 +308,14 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 							+ " - exception is: \n" + e1.getMessage());
 			return false;
 		}
-		HTable ht = ((HBaseWriter) writerPoolMember).getClient();
+		HTable hbaseTable = ((HBaseWriter) writerPoolMember).getClient();
 		// Here we can generate the rowkey for this uri ...
 		String url = curi.toString();
 		String row = Keying.createKey(url);
 		try {
 			// and look it up to see if it already exists...
-			if (ht.getRow(row) != null && !ht.getRow(row).isEmpty()) {
+			Get rowToGet = new Get(Bytes.toBytes(row));
+			if (hbaseTable.get(rowToGet) != null && !hbaseTable.get(rowToGet).isEmpty()) {
 				if (LOG.isDebugEnabled()) {
 					LOG.debug("Not A NEW Record - Url: "
 								+ url

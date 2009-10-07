@@ -8,7 +8,7 @@
   <packaging>jar</packaging>
   <version>0.20.0-SNAPSHOT</version>
   <name>HBase Writer</name>
-  <description>A library for writing Heritrix output directly to HBase tables.</description>
+  <description>A library for writing Heritrix2 output directly as records to an HBase table.</description>
   <url>http://code.google.com/p/hbase-writer</url>
   
   <inceptionYear>2007</inceptionYear>
