@@ -32,7 +32,7 @@ import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
-import org.apache.hadoop.hbase.io.BatchUpdate;
+import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.Keying;
 import org.apache.log4j.Logger;
@@ -74,32 +74,32 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	// TODO: make this variable configurable in the heritrix sheet:
 	// CONTENT_COLUMN_FAMILY
 	/** The Constant CONTENT_COLUMN_FAMILY. */
-	public static final String CONTENT_COLUMN_FAMILY = "content:";
+	public static final String CONTENT_COLUMN_FAMILY = "content";
 	// TODO: make this variable configurable in the heritrix sheet:
 	/** The Constant CONTENT_COLUMN. */
-	public static final String CONTENT_COLUMN = CONTENT_COLUMN_FAMILY + "raw_data";
+	public static final String CONTENT_COLUMN_NAME = "raw_data";
 	// TODO: make this variable configurable in the heritrix sheet:
 	// CURI_COLUMN_FAMILY
 	/** The Constant CURI_COLUMN_FAMILY. */
-	public static final String CURI_COLUMN_FAMILY = "curi:";
+	public static final String CURI_COLUMN_FAMILY = "curi";
 	// TODO: make this variable configurable in the heritrix sheet:
 	/** The Constant IP_COLUMN. */
-	private static final String IP_COLUMN = CURI_COLUMN_FAMILY + "ip";
+	private static final String IP_COLUMN_NAME = "ip";
 	// TODO: make this variable configurable in the heritrix sheet:
 	/** The Constant PATH_FROM_SEED_COLUMN. */
-	private static final String PATH_FROM_SEED_COLUMN = CURI_COLUMN_FAMILY + "path-from-seed";
+	private static final String PATH_FROM_SEED_COLUMN_NAME = "path-from-seed";
 	// TODO: make this variable configurable in the heritrix sheet:
 	/** The Constant IS_SEED_COLUMN. */
-	private static final String IS_SEED_COLUMN = CURI_COLUMN_FAMILY + "is-seed";
+	private static final String IS_SEED_COLUMN_NAME = "is-seed";
 	// TODO: make this variable configurable in the heritrix sheet:
 	/** The Constant VIA_COLUMN. */
-	private static final String VIA_COLUMN = CURI_COLUMN_FAMILY + "via";
+	private static final String VIA_COLUMN_NAME = "via";
 	// TODO: make this variable configurable in the heritrix sheet:
 	/** The Constant URL_COLUMN. */
-	private static final String URL_COLUMN = CURI_COLUMN_FAMILY + "url";
+	private static final String URL_COLUMN_NAME = "url";
 	// TODO: make this variable configurable in the heritrix sheet:
 	/** The Constant REQUEST_COLUMN. */
-	private static final String REQUEST_COLUMN = CURI_COLUMN_FAMILY + "request";
+	private static final String REQUEST_COLUMN_NAME = "request";
 
 	/**
 	 * Gets the HTable client.
@@ -206,59 +206,62 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 		if (LOG.isTraceEnabled()) {
 			LOG.trace("Writing " + url + " as " + rowKey.toString());
 		}
-		// create an hbase updateable object (the row object)
+		// create an hbase updateable object (the put object)
 		// Constructor takes the rowkey as the only argument
-		BatchUpdate batchUpdate = new BatchUpdate(rowKey);
+		Put batchPut = new Put(Bytes.toBytes(rowKey));
 		// write the target url to the url column
-		batchUpdate.put(URL_COLUMN, Bytes.toBytes(url));
+		batchPut.add(Bytes.toBytes(CURI_COLUMN_FAMILY), Bytes.toBytes(URL_COLUMN_NAME), curi.getFetchBeginTime(), Bytes.toBytes(url));
 		// write the target ip to the ip column
-		batchUpdate.put(IP_COLUMN, Bytes.toBytes(ip));
+		batchPut.add(Bytes.toBytes(CURI_COLUMN_FAMILY), Bytes.toBytes(IP_COLUMN_NAME), curi.getFetchBeginTime(), Bytes.toBytes(ip));
 		// is the url part of the seed url (the initial url(s) used to start the crawl)
 		if (curi.isSeed()) {
-			// TODO: Make Bytes.toBytes that takes a boolean.
-			batchUpdate.put(IS_SEED_COLUMN, Bytes.toBytes(Boolean.TRUE.toString()));
+			batchPut.add(Bytes.toBytes(CURI_COLUMN_FAMILY), Bytes.toBytes(IS_SEED_COLUMN_NAME), Bytes.toBytes(Boolean.TRUE));
 			if (curi.getPathFromSeed() != null && curi.getPathFromSeed().trim().length() > 0) {
-				batchUpdate.put(PATH_FROM_SEED_COLUMN, Bytes.toBytes(curi.getPathFromSeed().trim()));
+				batchPut.add(Bytes.toBytes(CURI_COLUMN_FAMILY), Bytes.toBytes(PATH_FROM_SEED_COLUMN_NAME), Bytes.toBytes(curi.getPathFromSeed().trim()));
 			}
 		}
 		String viaStr = (curi.getVia() != null) ? curi.getVia().toString().trim() : null;
 		if (viaStr != null && viaStr.length() > 0) {
-			batchUpdate.put(VIA_COLUMN, Bytes.toBytes(viaStr));
+			batchPut.add(Bytes.toBytes(CURI_COLUMN_FAMILY), Bytes.toBytes(VIA_COLUMN_NAME), Bytes.toBytes(viaStr));
 		}
-		// Write the Crawl Request to the BatchUpdate object 
+		// Write the Crawl Request to the Put object
 		if (ros.getSize() > 0) {
-			addInputToBatchUpdate(batchUpdate, REQUEST_COLUMN, ros.getReplayInputStream(), (int) ros.getSize());
+			batchPut.add(Bytes.toBytes(CURI_COLUMN_FAMILY), Bytes.toBytes(REQUEST_COLUMN_NAME), 
+					getByteArrayFromInputStream(ros.getReplayInputStream(), (int) ros.getSize()));
 		}
-		// Write the Crawl Response to the BatchUpdate object
-		addInputToBatchUpdate(batchUpdate, CONTENT_COLUMN, ris.getReplayInputStream(), (int) ris.getSize());
-		// Set crawl time as the timestamp to the BatchUpdate object.
-		batchUpdate.setTimestamp(curi.getFetchBeginTime());
+		// Write the Crawl Response to the Put object
+		batchPut.add(Bytes.toBytes(CONTENT_COLUMN_FAMILY), Bytes.toBytes(CONTENT_COLUMN_NAME), 
+				getByteArrayFromInputStream(ris.getReplayInputStream(), (int) ris.getSize()));
+		
+		// reset the input steam for the content processor.
+		ris.getReplayInputStream().setToResponseBodyStart();
 		// process the content (optional)
-		processContent(batchUpdate);
-		// write the BatchUpdate object to the HBase table
-		this.client.commit(batchUpdate);
+		processContent(batchPut, ris.getReplayInputStream(), (int) ris.getSize());
+		// Set crawl time as the timestamp to the Put object.
+		batchPut.setTimeStamp(curi.getFetchBeginTime());
+		// write the Put object to the HBase table
+		this.client.put(batchPut);
 	}
 
 	/**
 	 * Read the ReplayInputStream and write it to the given BatchUpdate with the given column.
 	 * 
-	 * @param bu the bu the hbase row object
 	 * @param column the column for the given data.
-	 * @param ris the ris the cell data as a replay input stream
-	 * @param size the size
+	 * @param replayInputStream the ris the cell data as a replay input stream
+	 * @param streamSize the size
 	 * 
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	private void addInputToBatchUpdate(final BatchUpdate bu, final String column, final ReplayInputStream ris, final int size) throws IOException {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream(size);
+	protected byte[] getByteArrayFromInputStream(final ReplayInputStream replayInputStream, final int streamSize) throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(streamSize);
 		try {
 			// read the InputStream to the ByteArrayOutputStream
-			ris.readFullyTo(baos);
+			replayInputStream.readFullyTo(baos);
 		} finally {
-			ris.close();
+			replayInputStream.close();
 		}
 		baos.close();
-		bu.put(column, baos.toByteArray());
+		return baos.toByteArray();
 	}
 
 	/**
@@ -272,9 +275,11 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	 * @param batchUpdate the batchUpdate - the hbase row object whose state can be manipulated
 	 * before the object is written.
 	 */
-	protected void processContent(BatchUpdate batchUpdate) {
-		// byte[] content = bu.get(CONTENT_COLUMN);
-		// process content.....
-		// bu.put("some:new_column", someParsedByteArray);
+	protected void processContent(Put put, ReplayInputStream replayInputStream, int streamSize) {
+		// process content array and parse it to a new byte array.....
+		// byte[] rowKey = put.getRow();
+		// byte[] rawContent = this.getByteArrayFromInputStream(replayInputStream, streamSize)
+		// byte[] someParsedByteArray = ....
+		// put.add(Bytes.toBytes("some_column_family"), Bytes.toBytes("a_new_column_name"), someParsedByteArray);
 	}
 }
