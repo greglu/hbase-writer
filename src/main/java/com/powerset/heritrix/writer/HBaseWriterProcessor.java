@@ -298,15 +298,15 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 	 * @return true, if checks if is record new
 	 */
 	private boolean isRecordNew(ProcessorURI curi) {
-		WriterPoolMember writer;
+		WriterPoolMember writerPoolMember;
 		try {
-			writer = getPool().borrowFile();
+			writerPoolMember = getPool().borrowFile();
 		} catch (IOException e1) {
-			LOG.error("No writer could be gotten from the pool: " + getPool().toString() 
+			LOG.error("No writer could be borrowed from the pool: " + getPool().toString() 
 							+ " - exception is: \n" + e1.getMessage());
 			return false;
 		}
-		HTable ht = ((HBaseWriter) writer).getClient();
+		HTable ht = ((HBaseWriter) writerPoolMember).getClient();
 		// Here we can generate the rowkey for this uri ...
 		String url = curi.toString();
 		String row = Keying.createKey(url);
@@ -314,25 +314,25 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 			// and look it up to see if it already exists...
 			if (ht.getRow(row) != null && !ht.getRow(row).isEmpty()) {
 				if (LOG.isDebugEnabled()) {
-					LOG.debug("Not Writing "
+					LOG.debug("Not A NEW Record - Url: "
 								+ url
-								+ " since rowkey: "
+								+ " has the existing rowkey: "
 								+ row.toString()
-								+ " already exists and onlyWriteNewRecords is enabled.");
+								+ " and has cell data.");
 				}
 				return false;
 			}
 		} catch (IOException e) {
 			LOG.error("Failed to determine if record: "
 							+ row.toString()
-							+ " should be written or not, deciding not to write the record: \n"
+							+ " is a new record due to IOExecption.  Deciding the record is already existing for now. \n"
 							+ e.getMessage());
 			return false;
 		} finally {
 			try {
-				getPool().returnFile(writer);
+				getPool().returnFile(writerPoolMember);
 			} catch (IOException e) {
-				LOG.error("Failed to add back writer to the pool after checking for existing rowkey: "
+				LOG.error("Failed to add back writer to the pool after checking if a rowkey is new or existing: "
 								+ row.toString() + "\n" + e.getMessage());
 				return false;
 			}
