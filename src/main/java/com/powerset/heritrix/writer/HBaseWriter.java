@@ -103,24 +103,24 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	/**
 	 * Instantiates a new HBaseWriter for the WriterPool to use in heritrix2.
 	 * 
-	 * @param master 
-	 * 		the master address.  i.e. : hbase-master.server.example:60000
-	 * @param table 
+	 * @param masterAddress 
+	 * 		the master address.  i.e. : hbase-master.server.apache.org:60000
+	 * @param tableName 
 	 * 		the table in hbase to write to.  i.e. : webtable
 	 * 
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public HBaseWriter(final String master, final String table) throws IOException {
+	public HBaseWriter(final String masterAddress, final String tableName) throws IOException {
 		super(null, null, null, false, null);
-		if (table == null || table.length() <= 0) {
+		if (tableName == null || tableName.length() <= 0) {
 			throw new IllegalArgumentException("Must specify a table name");
 		}
-		HBaseConfiguration c = new HBaseConfiguration();
-		if (master != null && master.length() > 0) {
-			c.set(HConstants.MASTER_ADDRESS, master);
+		HBaseConfiguration hbaseConfiguration = new HBaseConfiguration();
+		if (masterAddress != null && masterAddress.length() > 0) {
+			hbaseConfiguration.set(HConstants.MASTER_ADDRESS, masterAddress);
 		}
-		createCrawlTable(c, table);
-		this.client = new HTable(c, table);
+		createCrawlTable(hbaseConfiguration, tableName);
+		this.client = new HTable(hbaseConfiguration, tableName);
 	}
 
 	/**
@@ -135,21 +135,54 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	/**
 	 * Creates the crawl table in HBase.
 	 * 
-	 * @param c the c
-	 * @param table the table
+	 * @param hbaseConfiguration the c
+	 * @param hbaseTableName the table
 	 * 
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	protected void createCrawlTable(final HBaseConfiguration c, final String table) throws IOException {
-		HBaseAdmin admin = new HBaseAdmin(c);
-		if (admin.tableExists(table)) {
-			return;
+	protected void createCrawlTable(final HBaseConfiguration hbaseConfiguration, final String hbaseTableName) throws IOException {
+		// an HBase admin object to manage hbase tables.
+		HBaseAdmin hbaseAdmin = new HBaseAdmin(hbaseConfiguration);
+		if (hbaseAdmin.tableExists(hbaseTableName)) {
+			boolean foundContentColumnFamily = false;
+			boolean foundCURIColumnFamily = false;
+			LOG.debug("Checking table: " + hbaseTableName + " for structure...");
+			// Check the existing table and manipulate it if necessary
+			// to conform to the pre-existing table schema.
+			HTableDescriptor existingHBaseTable = hbaseAdmin.getTableDescriptor(hbaseTableName);
+			for (HColumnDescriptor hColumnDescriptor: existingHBaseTable.getFamilies()) {
+				if (hColumnDescriptor.getNameAsString().equalsIgnoreCase(CONTENT_COLUMN_FAMILY)) {
+					foundContentColumnFamily = true;
+				} else if (hColumnDescriptor.getNameAsString().equalsIgnoreCase(CURI_COLUMN_FAMILY)) {
+					foundCURIColumnFamily = true;
+				}
+			}
+			// modify the table if it's missing any of the column families.
+			if (!foundContentColumnFamily || !foundCURIColumnFamily) {
+				LOG.info("Disabling table: " + hbaseTableName);
+				hbaseAdmin.disableTable(hbaseTableName);
+				if (!foundContentColumnFamily) {
+					LOG.info("Adding column to table: " + hbaseTableName + " column: " + CONTENT_COLUMN_FAMILY);
+					existingHBaseTable.addFamily(new HColumnDescriptor(CONTENT_COLUMN_FAMILY));		
+				}
+				if (!foundCURIColumnFamily) {
+					LOG.info("Adding column to table: " + hbaseTableName + " column: " + CURI_COLUMN_FAMILY);
+					existingHBaseTable.addFamily(new HColumnDescriptor(CURI_COLUMN_FAMILY));	
+				}
+				LOG.info("Enabling table: " + hbaseTableName);
+				hbaseAdmin.enableTable(hbaseTableName);	
+			}
+			LOG.debug("Done checking table: " + hbaseTableName);
+		} else {
+			// create a new hbase table
+			LOG.info("Creating table " + hbaseTableName);
+			HTableDescriptor newHBaseTable = new HTableDescriptor(hbaseTableName);
+			newHBaseTable.addFamily(new HColumnDescriptor(CONTENT_COLUMN_FAMILY));
+			newHBaseTable.addFamily(new HColumnDescriptor(CURI_COLUMN_FAMILY));
+			// create the table
+			hbaseAdmin.createTable(newHBaseTable);
+			LOG.info("Created table " + newHBaseTable.toString());
 		}
-		HTableDescriptor htd = new HTableDescriptor(table);
-		htd.addFamily(new HColumnDescriptor(CONTENT_COLUMN_FAMILY));
-		htd.addFamily(new HColumnDescriptor(CURI_COLUMN_FAMILY));
-		admin.createTable(htd);
-		LOG.info("Created table " + htd.toString());
 	}
 
 	/**
@@ -165,37 +198,44 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	 */
 	public void write(final ProcessorURI curi, final String ip, final RecordingOutputStream ros, final RecordingInputStream ris)
 			throws IOException {
+		// generate the target url of the crawled document
 		String url = curi.toString();
-		String row = Keying.createKey(url);
+		// create the hbase friendly rowkey
+		String rowKey = Keying.createKey(url);
 		if (LOG.isTraceEnabled()) {
-			LOG.trace("Writing " + url + " as " + row.toString());
+			LOG.trace("Writing " + url + " as " + rowKey.toString());
 		}
-		BatchUpdate bu = new BatchUpdate(row);
-		bu.put(URL_COLUMN, Bytes.toBytes(url));
-		bu.put(IP_COLUMN, Bytes.toBytes(ip));
+		// create an hbase updateable object (the row object)
+		// Constructor takes the rowkey as the only argument
+		BatchUpdate batchUpdate = new BatchUpdate(rowKey);
+		// write the target url to the url column
+		batchUpdate.put(URL_COLUMN, Bytes.toBytes(url));
+		// write the target ip to the ip column
+		batchUpdate.put(IP_COLUMN, Bytes.toBytes(ip));
+		// is the url part of the seed url (the initial url(s) used to start the crawl)
 		if (curi.isSeed()) {
 			// TODO: Make Bytes.toBytes that takes a boolean.
-			bu.put(IS_SEED_COLUMN, Bytes.toBytes(Boolean.TRUE.toString()));
+			batchUpdate.put(IS_SEED_COLUMN, Bytes.toBytes(Boolean.TRUE.toString()));
 			if (curi.getPathFromSeed() != null && curi.getPathFromSeed().trim().length() > 0) {
-				bu.put(PATH_FROM_SEED_COLUMN, Bytes.toBytes(curi.getPathFromSeed().trim()));
+				batchUpdate.put(PATH_FROM_SEED_COLUMN, Bytes.toBytes(curi.getPathFromSeed().trim()));
 			}
 		}
 		String viaStr = (curi.getVia() != null) ? curi.getVia().toString().trim() : null;
 		if (viaStr != null && viaStr.length() > 0) {
-			bu.put(VIA_COLUMN, Bytes.toBytes(viaStr));
+			batchUpdate.put(VIA_COLUMN, Bytes.toBytes(viaStr));
 		}
 		// Write the Crawl Request to the BatchUpdate object 
 		if (ros.getSize() > 0) {
-			add(bu, REQUEST_COLUMN, ros.getReplayInputStream(), (int) ros.getSize());
+			addInputToBatchUpdate(batchUpdate, REQUEST_COLUMN, ros.getReplayInputStream(), (int) ros.getSize());
 		}
 		// Write the Crawl Response to the BatchUpdate object
-		add(bu, CONTENT_COLUMN, ris.getReplayInputStream(), (int) ris.getSize());
+		addInputToBatchUpdate(batchUpdate, CONTENT_COLUMN, ris.getReplayInputStream(), (int) ris.getSize());
 		// Set crawl time as the timestamp to the BatchUpdate object.
-		bu.setTimestamp(curi.getFetchBeginTime());
+		batchUpdate.setTimestamp(curi.getFetchBeginTime());
 		// process the content (optional)
-		processContent(bu);
+		processContent(batchUpdate);
 		// write the BatchUpdate object to the HBase table
-		this.client.commit(bu);
+		this.client.commit(batchUpdate);
 	}
 
 	/**
@@ -206,32 +246,34 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	 * and storing the results in new column families/columns using the batch
 	 * update object.
 	 * 
-	 * @param bu the bu
+	 * @param batchUpdate the batchUpdate - the hbase row object whose state can be manipulated
+	 * before the object is written.
 	 */
-	protected void processContent(BatchUpdate bu) {
+	protected void processContent(BatchUpdate batchUpdate) {
 		// byte[] content = bu.get(CONTENT_COLUMN);
 		// process content.....
 		// bu.put("some:new_column", someParsedByteArray);
 	}
 
 	/**
-	 * Add ReplayInputStream to the given BatchUpdate & key.
+	 * Read the ReplayInputStream and write it to the given BatchUpdate with the given column.
 	 * 
-	 * @param bu the bu
-	 * @param key the key
-	 * @param ris the ris
+	 * @param bu the bu the hbase row object
+	 * @param column the column for the given data.
+	 * @param ris the ris the cell data as a replay input stream
 	 * @param size the size
 	 * 
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	private void add(final BatchUpdate bu, final String key, final ReplayInputStream ris, final int size) throws IOException {
+	private void addInputToBatchUpdate(final BatchUpdate bu, final String column, final ReplayInputStream ris, final int size) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream(size);
 		try {
+			// read the InputStream to the ByteArrayOutputStream
 			ris.readFullyTo(baos);
 		} finally {
 			ris.close();
 		}
 		baos.close();
-		bu.put(key, baos.toByteArray());
+		bu.put(column, baos.toByteArray());
 	}
 }

@@ -471,12 +471,6 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 		throw new AssertionError();
 	}
 
-	// good to keep at end of source: must run after all per-Key
-	// initialization values are set.
-	static {
-		KeyManager.addKeys(HBaseWriterProcessor.class);
-	}
-
 	/* (non-Javadoc)
 	 * @see java.io.Closeable#close()
 	 */
@@ -484,5 +478,9 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 		this.pool.close();
 	}
 
-	
+	// good to keep at end of source: must run after all per-Key
+	// initialization values are set.
+	static {
+		KeyManager.addKeys(HBaseWriterProcessor.class);
+	}
 }
