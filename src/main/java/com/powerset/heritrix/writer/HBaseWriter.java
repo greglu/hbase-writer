@@ -52,6 +52,7 @@ import org.archive.modules.ProcessorURI;
 	The following is a complete list of columns that get written to by default:
 	
 	content:raw_data
+	
 	curi:ip
 	curi:path-from-seed
 	curi:is-seed
@@ -101,6 +102,15 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	private static final String REQUEST_COLUMN = CURI_COLUMN_FAMILY + "request";
 
 	/**
+	 * Gets the HTable client.
+	 * 
+	 * @return the client
+	 */
+	public HTable getClient() {
+		return client;
+	}
+	
+	/**
 	 * Instantiates a new HBaseWriter for the WriterPool to use in heritrix2.
 	 * 
 	 * @param masterAddress 
@@ -121,15 +131,6 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 		}
 		createCrawlTable(hbaseConfiguration, tableName);
 		this.client = new HTable(hbaseConfiguration, tableName);
-	}
-
-	/**
-	 * Gets the HTable client.
-	 * 
-	 * @return the client
-	 */
-	public HTable getClient() {
-		return client;
 	}
 
 	/**
@@ -239,23 +240,6 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	}
 
 	/**
-	 * This is a stub method and is here to allow extension/overriding for
-	 * custom content parsing, data manipulation and to populate new columns.
-	 * 
-	 * For Example : html parsing, text extraction, analysis and transformation
-	 * and storing the results in new column families/columns using the batch
-	 * update object.
-	 * 
-	 * @param batchUpdate the batchUpdate - the hbase row object whose state can be manipulated
-	 * before the object is written.
-	 */
-	protected void processContent(BatchUpdate batchUpdate) {
-		// byte[] content = bu.get(CONTENT_COLUMN);
-		// process content.....
-		// bu.put("some:new_column", someParsedByteArray);
-	}
-
-	/**
 	 * Read the ReplayInputStream and write it to the given BatchUpdate with the given column.
 	 * 
 	 * @param bu the bu the hbase row object
@@ -275,5 +259,22 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 		}
 		baos.close();
 		bu.put(column, baos.toByteArray());
+	}
+
+	/**
+	 * This is a stub method and is here to allow extension/overriding for
+	 * custom content parsing, data manipulation and to populate new columns.
+	 * 
+	 * For Example : html parsing, text extraction, analysis and transformation
+	 * and storing the results in new column families/columns using the batch
+	 * update object.
+	 * 
+	 * @param batchUpdate the batchUpdate - the hbase row object whose state can be manipulated
+	 * before the object is written.
+	 */
+	protected void processContent(BatchUpdate batchUpdate) {
+		// byte[] content = bu.get(CONTENT_COLUMN);
+		// process content.....
+		// bu.put("some:new_column", someParsedByteArray);
 	}
 }
