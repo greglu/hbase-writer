@@ -65,7 +65,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 
 	/** Location of hbase master. */
 	@Immutable
-	public static final Key<String> MASTER = Key.make(HConstants.DEFAULT_MASTER_ADDRESS);
+	public static final Key<String> MASTER = Key.make(HConstants.DEFAULT_HOST + ":" + HConstants.DEFAULT_MASTER_PORT);
 
 	/** HBase tableName to crawl into. */
 	@Immutable

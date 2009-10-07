@@ -127,7 +127,7 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 		}
 		HBaseConfiguration hbaseConfiguration = new HBaseConfiguration();
 		if (masterAddress != null && masterAddress.length() > 0) {
-			hbaseConfiguration.set(HConstants.MASTER_ADDRESS, masterAddress);
+			hbaseConfiguration.set(HConstants.DEFAULT_HOST + ":" + HConstants.DEFAULT_MASTER_PORT, masterAddress);
 		}
 		createCrawlTable(hbaseConfiguration, tableName);
 		this.client = new HTable(hbaseConfiguration, tableName);
@@ -150,7 +150,7 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 			LOG.debug("Checking table: " + hbaseTableName + " for structure...");
 			// Check the existing table and manipulate it if necessary
 			// to conform to the pre-existing table schema.
-			HTableDescriptor existingHBaseTable = hbaseAdmin.getTableDescriptor(hbaseTableName);
+			HTableDescriptor existingHBaseTable = hbaseAdmin.getTableDescriptor(Bytes.toBytes(hbaseTableName));
 			for (HColumnDescriptor hColumnDescriptor: existingHBaseTable.getFamilies()) {
 				if (hColumnDescriptor.getNameAsString().equalsIgnoreCase(CONTENT_COLUMN_FAMILY)) {
 					foundContentColumnFamily = true;
