@@ -481,9 +481,4 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 		this.pool.close();
 	}
 
-	// good to keep at end of source: must run after all per-Key
-	// initialization values are set.
-	static {
-		KeyManager.addKeys(HBaseWriterProcessor.class);
-	}
 }

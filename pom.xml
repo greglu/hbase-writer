@@ -108,7 +108,6 @@
     </repository>
   </repositories>
   
-  
   <distributionManagement>
      <repository>
         <id>hbasewriter-releases</id>

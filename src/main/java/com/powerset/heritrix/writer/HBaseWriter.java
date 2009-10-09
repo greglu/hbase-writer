@@ -275,7 +275,7 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	 * @param batchUpdate the batchUpdate - the hbase row object whose state can be manipulated
 	 * before the object is written.
 	 */
-	protected void processContent(Put put, ReplayInputStream replayInputStream, int streamSize) {
+	protected void processContent(Put put, ReplayInputStream replayInputStream, int streamSize) throws IOException {
 		// process content array and parse it to a new byte array.....
 		// byte[] rowKey = put.getRow();
 		// byte[] rawContent = this.getByteArrayFromInputStream(replayInputStream, streamSize)
