@@ -14,7 +14,7 @@ import com.powerset.heritrix.writer.HBaseWriter;
 public class TestHBaseWriter {
 	
 	/** The master. */
-	String master = "localhost:60000";
+	String zkQuorum = "localhost";
 	
 	/** The table. */
 	String table = "test";
@@ -38,14 +38,14 @@ public class TestHBaseWriter {
 	public void testCreateHBaseWriter() throws IOException {
 		// Test
 		try {
-			hw = new HBaseWriter(master, null);
+			hw = new HBaseWriter(zkQuorum, null);
 			Assert.assertNull(hw);
 		} catch (IllegalArgumentException e) {
 			Assert.assertNotNull(e);
 		}
 
 		try {
-			hw = new HBaseWriter(master, "");
+			hw = new HBaseWriter(zkQuorum, "");
 			Assert.assertNull(hw);
 		} catch (IllegalArgumentException e) {
 			Assert.assertNotNull(e);

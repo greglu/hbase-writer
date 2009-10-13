@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 
-import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -65,9 +64,9 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 	/** The LOG. */
 	private final Logger LOG = Logger.getLogger(this.getClass().getName());
 
-	/** Location of hbase master. */
+	/** Location of zookeeper quorum. */
 	@Immutable
-	public static final Key<String> MASTER = Key.make(HConstants.DEFAULT_HOST + ":" + HConstants.DEFAULT_MASTER_PORT);
+	public static final Key<String> ZK_QUORUM = Key.make("localhost");
 
 	/** HBase tableName to crawl into. */
 	@Immutable
@@ -117,8 +116,8 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 	/** The max content size. */
 	private int maxContentSize;
 	
-	/** The master. */
-	private String master;
+	/** The zookeeper quorum. */
+	private String zkQuorum;
 	
 	/** The table name. */
 	private String tableName;
@@ -150,7 +149,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 		this.serverCache = context.get(this, SERVER_CACHE);
 		this.maxActive = context.get(this, POOL_MAX_ACTIVE).intValue();
 		this.maxWait = context.get(this, POOL_MAX_WAIT).intValue();
-		this.master = context.get(this, MASTER);
+		this.zkQuorum = context.get(this, ZK_QUORUM);
 		this.tableName = context.get(this, TABLE);
 		this.onlyWriteNewRecords = context.get(this, WRITE_ONLY_NEW_RECORDS).booleanValue();
 		this.onlyProcessNewRecords = context.get(this, PROCESS_ONLY_NEW_RECORDS).booleanValue();
@@ -391,16 +390,16 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 	 * Setup pool.
 	 */
 	protected void setupPool() {
-		setPool(new HBaseWriterPool(getMaster(), getTable(), getMaxActive(), getMaxWait()));
+		setPool(new HBaseWriterPool(getZKQuorum(), getTable(), getMaxActive(), getMaxWait()));
 	}
 
 	/**
-	 * Gets the master.
+	 * Gets the zookeeper quorum.
 	 * 
-	 * @return the master
+	 * @return the zkQuorum
 	 */
-	protected String getMaster() {
-		return this.master;
+	protected String getZKQuorum() {
+		return this.zkQuorum;
 	}
 
 	/**

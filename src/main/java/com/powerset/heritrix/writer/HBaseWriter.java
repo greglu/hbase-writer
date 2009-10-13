@@ -113,22 +113,25 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	/**
 	 * Instantiates a new HBaseWriter for the WriterPool to use in heritrix2.
 	 * 
-	 * @param masterAddress 
-	 * 		the master address.  i.e. : hbase-master.server.apache.org:60000
+	 * @param zkQuorum 
+	 * 		the zookeeper quorum. The list of hosts that make up you zookeeper quorum.  
+	 * 		i.e.:  zkHost1,zkHost2,zkHost3  
 	 * @param tableName 
 	 * 		the table in hbase to write to.  i.e. : webtable
 	 * 
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public HBaseWriter(final String masterAddress, final String tableName) throws IOException {
+	public HBaseWriter(final String zkQuorum, final String tableName) throws IOException {
 		super(null, null, null, false, null);
 		if (tableName == null || tableName.length() <= 0) {
 			throw new IllegalArgumentException("Must specify a table name");
 		}
 		HBaseConfiguration hbaseConfiguration = new HBaseConfiguration();
-		if (masterAddress != null && masterAddress.length() > 0) {
-			hbaseConfiguration.set(HConstants.DEFAULT_HOST + ":" + HConstants.DEFAULT_MASTER_PORT, masterAddress);
+		if (zkQuorum != null && zkQuorum.length() > 0) {
+			LOG.info("setting zookeeper quorum to : " + zkQuorum);
+			hbaseConfiguration.set(HConstants.ZOOKEEPER_QUORUM, zkQuorum);
 		}
+		LOG.debug("zookeeper quorum value: " + hbaseConfiguration.get(HConstants.ZOOKEEPER_QUORUM));
 		createCrawlTable(hbaseConfiguration, tableName);
 		this.client = new HTable(hbaseConfiguration, tableName);
 	}

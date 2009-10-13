@@ -37,12 +37,13 @@ public class HBaseWriterPool extends WriterPool {
 	/**
 	 * Constructor.
 	 * 
-	 * @param master the master address to HBasee
+	 * @param zkQuorum the list of zookeeper quorum servers that serve HBase, comma seperated.  
+	 * 			i.e.:  zkHost1,zkHost2,zkHost3
 	 * @param table the table name in HBase
 	 * @param poolMaximumActive the pool maximum active
 	 * @param poolMaximumWait the pool maximum wait
 	 */
-	public HBaseWriterPool(final String master, final String table, final int poolMaximumActive, final int poolMaximumWait) {
+	public HBaseWriterPool(final String zkQuorum, final String table, final int poolMaximumActive, final int poolMaximumWait) {
 		// Below is hard to follow. Its invocation of this classes super
 		// constructor passing a serial, an instance of BasePoolable.. that
 		// is defined in line, followed by settings, max and wait.
@@ -52,7 +53,7 @@ public class HBaseWriterPool extends WriterPool {
 			// Poolable factory
 			new BasePoolableObjectFactory() {
 				public Object makeObject() throws Exception {
-					return new HBaseWriter(master, table);
+					return new HBaseWriter(zkQuorum, table);
 				}
 
 				public void destroyObject(Object arcWriter) throws Exception {

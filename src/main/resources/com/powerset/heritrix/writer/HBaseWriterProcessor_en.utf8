@@ -8,7 +8,6 @@ pool-max-active-description:
 Maximum active files in pool. This setting cannot be varied over the life
 of a crawl.
 
-
 pool-max-wait-description:
 Maximum time to wait on pool element (milliseconds). This setting cannot
 be varied over the life of a crawl.
@@ -21,5 +20,5 @@ zero means no upper limit.
 table-description:
 Name of the HBase table to write crawl to
 
-master-description:
-Master host and port: e.g. localhost:60010
+zk_quorum-description:
+quorum of zk hosts that describe where the hbase master is.
