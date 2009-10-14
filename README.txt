@@ -67,6 +67,10 @@ zkquorum
   So this value is a comma seperated list of the zk quorum.
   i.e.: zkHost1,zkHost2,zkHost3
 
+zkclientport
+  The zookeeper quroum client port that clients should connect to to get HBase information.
+  i.e.: 2181
+
 table
   Which table in HBase to write the crawl to.  This table will be created automatically if it doesnt exist.
   i.e.: Webtable
