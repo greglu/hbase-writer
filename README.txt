@@ -70,6 +70,15 @@ zkquorum
 table
   Which table in HBase to write the crawl to.  This table will be created automatically if it doesnt exist.
   i.e.: Webtable
+  
+write-only-new-records
+  Set to "false" by default.  In default mode, heritrix will crawl all urls regardless of existing rowkeys (urls).  
+  By setting this to "true" you ensure that only new urls(rowkeys) are written to the crawl table.  
+
+process-only-new-records
+  Set to "false" by default.  In default mode, heritrix will process (fetch and parse) all urls regardless of existing rowkeys (urls).  
+  By setting this to "true" you ensure that only new urls(rowkeys) are processed by heritrix.  Also, if set to "true", 
+  heritrix doesnt download any content that is already existing as a record in the hbase table. 
 
 COMPILING THE SOURCE
 ====================

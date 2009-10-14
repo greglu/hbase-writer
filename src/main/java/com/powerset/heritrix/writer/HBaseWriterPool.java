@@ -53,7 +53,7 @@ public class HBaseWriterPool extends WriterPool {
 			// Poolable factory
 			new BasePoolableObjectFactory() {
 				public Object makeObject() throws Exception {
-					return new HBaseWriter(zkQuorum, table);
+					return new HBaseWriter(zkQuorum, zkClientPort, table);
 				}
 
 				public void destroyObject(Object arcWriter) throws Exception {

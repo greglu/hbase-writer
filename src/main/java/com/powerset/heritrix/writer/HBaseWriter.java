@@ -121,7 +121,7 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	 * 
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public HBaseWriter(final String zkQuorum, final String tableName) throws IOException {
+	public HBaseWriter(final String zkQuorum, final int zkClientPort, final String tableName) throws IOException {
 		super(null, null, null, false, null);
 		if (tableName == null || tableName.length() <= 0) {
 			throw new IllegalArgumentException("Must specify a table name");
@@ -130,6 +130,12 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 		if (zkQuorum != null && zkQuorum.length() > 0) {
 			LOG.info("setting zookeeper quorum to : " + zkQuorum);
 			hbaseConfiguration.setStrings(HConstants.ZOOKEEPER_QUORUM, zkQuorum.split(","));
+		}
+		LOG.debug("zookeeper quorum value: " + hbaseConfiguration.get(HConstants.ZOOKEEPER_QUORUM));
+		if (zkClientPort > 0) {
+			LOG.info("setting zookeeper client Port to : " + zkClientPort);
+			// TODO: Add this string to HConstants
+			hbaseConfiguration.setInt("hbase.zookeeper.property.clientPort", zkClientPort);
 		}
 		LOG.debug("zookeeper quorum value: " + hbaseConfiguration.get(HConstants.ZOOKEEPER_QUORUM));
 		createCrawlTable(hbaseConfiguration, tableName);

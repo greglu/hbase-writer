@@ -16,6 +16,8 @@ public class TestHBaseWriter {
 	/** The master. */
 	String zkQuorum = "localhost";
 	
+	int zkClientPort = 2181;
+	
 	/** The table. */
 	String table = "test";
 	
@@ -38,14 +40,14 @@ public class TestHBaseWriter {
 	public void testCreateHBaseWriter() throws IOException {
 		// Test
 		try {
-			hw = new HBaseWriter(zkQuorum, null);
+			hw = new HBaseWriter(zkQuorum,zkClientPort,null);
 			Assert.assertNull(hw);
 		} catch (IllegalArgumentException e) {
 			Assert.assertNotNull(e);
 		}
 
 		try {
-			hw = new HBaseWriter(zkQuorum, "");
+			hw = new HBaseWriter(zkQuorum, zkClientPort, "");
 			Assert.assertNull(hw);
 		} catch (IllegalArgumentException e) {
 			Assert.assertNotNull(e);
