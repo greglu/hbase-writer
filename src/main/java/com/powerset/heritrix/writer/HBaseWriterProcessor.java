@@ -67,6 +67,10 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 	@Immutable
 	public static final Key<String> ZKQUORUM = Key.make("localhost");
 
+	/** The port that clients should connect on to contact their zk quorum hsots. */
+	@Immutable
+	public static final Key<Integer> ZKCLIENTPORT = Key.make(2181);
+	
 	/** HBase tableName to crawl into. */
 	@Immutable
 	public static final Key<String> TABLE = Key.make("crawl");
@@ -127,6 +131,9 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 	/** The comma seperated string of hostnames that make up the zookeeper quorum. */
 	private String zkQuorum;
 	
+	/** The port that zk clients should connect to for information. */
+	private int zkClientPort;
+	
 	/** The hbase table name. */
 	private String tableName;
 	
@@ -158,6 +165,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 		this.maxActive = context.get(this, POOL_MAX_ACTIVE).intValue();
 		this.maxWait = context.get(this, POOL_MAX_WAIT).intValue();
 		this.zkQuorum = context.get(this, ZKQUORUM);
+		this.zkClientPort = context.get(this, ZKCLIENTPORT);
 		this.tableName = context.get(this, TABLE);
 		this.onlyWriteNewRecords = context.get(this, WRITE_ONLY_NEW_RECORDS).booleanValue();
 		this.onlyProcessNewRecords = context.get(this, PROCESS_ONLY_NEW_RECORDS).booleanValue();
@@ -397,7 +405,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 	 * Setup pool.
 	 */
 	protected void setupPool() {
-		setPool(new HBaseWriterPool(getZKQuorum(), getTable(), getMaxActive(), getMaxWait()));
+		setPool(new HBaseWriterPool(getZKQuorum(), getZKClientPort(), getTable(), getMaxActive(), getMaxWait()));
 	}
 
 	/**
@@ -409,6 +417,16 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 		return this.zkQuorum;
 	}
 
+	/**
+	 * Gets the zookeeper client port.
+	 * 
+	 * @return the zlClientPort
+	 */
+	protected int getZKClientPort() {
+		return this.zkClientPort;
+	}
+
+	
 	/**
 	 * Gets the table.
 	 * 

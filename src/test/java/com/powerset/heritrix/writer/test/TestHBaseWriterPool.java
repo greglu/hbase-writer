@@ -13,7 +13,9 @@ import com.powerset.heritrix.writer.HBaseWriterPool;
 public class TestHBaseWriterPool {
 	
 	/** The master. */
-	String master = "locahost";
+	String zkQuorum = "locahost";
+	
+	int clientPort = 2181;
 	
 	/** The table. */
 	String table = "test";
@@ -32,8 +34,7 @@ public class TestHBaseWriterPool {
 	 */
 	@BeforeClass()
 	public void createHBaseWriterPool() {
-		hwp = new HBaseWriterPool(master, table, poolMaximumActive,
-				poolMaximumWait);
+		hwp = new HBaseWriterPool(zkQuorum, clientPort, table, poolMaximumActive, poolMaximumWait);
 	}
 
 	/**

@@ -43,7 +43,7 @@ public class HBaseWriterPool extends WriterPool {
 	 * @param poolMaximumActive the pool maximum active
 	 * @param poolMaximumWait the pool maximum wait
 	 */
-	public HBaseWriterPool(final String zkQuorum, final String table, final int poolMaximumActive, final int poolMaximumWait) {
+	public HBaseWriterPool(final String zkQuorum, final int zkClientPort, final String table, final int poolMaximumActive, final int poolMaximumWait) {
 		// Below is hard to follow. Its invocation of this classes super
 		// constructor passing a serial, an instance of BasePoolable.. that
 		// is defined in line, followed by settings, max and wait.
