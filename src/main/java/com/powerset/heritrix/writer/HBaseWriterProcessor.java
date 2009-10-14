@@ -66,7 +66,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 
 	/** Location of zookeeper quorum. */
 	@Immutable
-	public static final Key<String> ZK_QUORUM = Key.make("localhost");
+	public static final Key<String> ZKQUORUM = Key.make("localhost");
 
 	/** HBase tableName to crawl into. */
 	@Immutable
@@ -149,7 +149,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 		this.serverCache = context.get(this, SERVER_CACHE);
 		this.maxActive = context.get(this, POOL_MAX_ACTIVE).intValue();
 		this.maxWait = context.get(this, POOL_MAX_WAIT).intValue();
-		this.zkQuorum = context.get(this, ZK_QUORUM);
+		this.zkQuorum = context.get(this, ZKQUORUM);
 		this.tableName = context.get(this, TABLE);
 		this.onlyWriteNewRecords = context.get(this, WRITE_ONLY_NEW_RECORDS).booleanValue();
 		this.onlyProcessNewRecords = context.get(this, PROCESS_ONLY_NEW_RECORDS).booleanValue();

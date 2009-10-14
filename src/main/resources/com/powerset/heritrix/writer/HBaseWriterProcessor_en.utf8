@@ -20,5 +20,5 @@ zero means no upper limit.
 table-description:
 Name of the HBase table to write crawl to
 
-zk_quorum-description:
+zkquorum-description:
 quorum of zk hosts that describe where the hbase master is.
