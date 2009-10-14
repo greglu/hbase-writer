@@ -23,6 +23,9 @@ Name of the HBase table to write crawl to
 zkquorum-description:
 quorum of zk hosts that describe where the hbase master is.
 
+zkclientport-description:
+The zookeeper quroum client port that clients should connect to to get HBase information.
+
 write-only-new-records-description:
 If set to true, only write new rowkey records (urls) to hbase.  
 Default is set to false, which writes all urls that are crawled.
