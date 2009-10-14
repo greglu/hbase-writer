@@ -26,7 +26,6 @@ package com.powerset.heritrix.writer;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
 
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HTable;
@@ -64,7 +63,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 	/** The LOG. */
 	private final Logger LOG = Logger.getLogger(this.getClass().getName());
 
-	/** Location of zookeeper quorum. */
+	/** Commas-seperated list of Hostnames in the zookeeper quorum. */
 	@Immutable
 	public static final Key<String> ZKQUORUM = Key.make("localhost");
 
@@ -72,11 +71,20 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 	@Immutable
 	public static final Key<String> TABLE = Key.make("crawl");
 
-	/** If set to true, then only write urls that are new rowkey records. Default is false, which will write all urls to the HBase table.  Heritrix is good about not hitting the same url twice, so this feature is to ensure that you can run multiple sessions of the same crawl configuration and not fetch the same url more than once. You may just want to crawl a site to see what new urls have been added over time, or continue where you left off on a terminated crawl. */
+	/** 
+	 * If set to true, then only write urls that are new rowkey records. Default is false, which will write all urls to the HBase table.  
+	 * Heritrix is good about not hitting the same url twice, so this feature is to ensure that you can run multiple sessions 
+	 * of the same crawl configuration and not write the same url more than once to the same hbase table. You may just want to crawl a site to 
+	 * see what new urls have been added over time, or continue where you left off on a terminated crawl.  Heritrix itself does support this
+	 * functionalty by supporting "Checkpoints" during a crawl session, so this may not be a necessary option. 
+	 */
 	@Immutable
 	public static final Key<Boolean> WRITE_ONLY_NEW_RECORDS = Key.make(false);
 	
-	/** If set to true, then only process urls that are new rowkey records. Default is false, which will process all urls to the HBase table.  In this mode, Heritrix wont even download and traverse the url if it exists in the HBase table. */
+	/** 
+	 * If set to true, then only process urls that are new rowkey records. Default is false, which will process all urls to the HBase table.  
+	 * In this mode, Heritrix wont even fetch and parse the content served at the url if it already exists as a rowkey in the HBase table. 
+	 */
 	@Immutable
 	public static final Key<Boolean> PROCESS_ONLY_NEW_RECORDS = Key.make(false);
 
@@ -116,16 +124,16 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 	/** The max content size. */
 	private int maxContentSize;
 	
-	/** The zookeeper quorum. */
+	/** The comma seperated string of hostnames that make up the zookeeper quorum. */
 	private String zkQuorum;
 	
-	/** The table name. */
+	/** The hbase table name. */
 	private String tableName;
 	
-	/** The only write new records. */
+	/** The only write new records turnable. */
 	private boolean onlyWriteNewRecords;
 	
-	/** The only process new records. */
+	/** The only process new records turnable. */
 	private boolean onlyProcessNewRecords;
 
 	/** The total bytes written to disk. */
@@ -194,24 +202,23 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 					ModuleAttributeConstants.A_DNS_SERVER_IP_LABEL);
 		}
 		// otherwise, host referenced in URI
-		CrawlHost h = ServerCacheUtil.getHostFor(serverCache, curi.getUURI());
-		if (h == null) {
+		CrawlHost crawlHost = ServerCacheUtil.getHostFor(serverCache, curi.getUURI());
+		if (crawlHost == null) {
 			throw new NullPointerException("Crawlhost is null for " + curi + " " + curi.getVia());
 		}
-		InetAddress a = h.getIP();
-		if (a == null) {
+		// check if the ip address was looked up.
+		if (crawlHost.getIP() == null) {
 			throw new NullPointerException(
 					"Address is null for "
 							+ curi
 							+ " "
 							+ curi.getVia()
 							+ ". Address "
-							+ ((h.getIpFetched() == CrawlHost.IP_NEVER_LOOKED_UP) ? "was never looked up."
-									: (System.currentTimeMillis() - h
-											.getIpFetched())
-											+ " ms ago."));
+							+ ((crawlHost.getIpFetched() == CrawlHost.IP_NEVER_LOOKED_UP) ? "was never looked up."
+									: (System.currentTimeMillis() - crawlHost.getIpFetched()) 
+							+ " ms ago."));
 		}
-		return h.getIP().getHostAddress();
+		return crawlHost.getIP().getHostAddress();
 	}
 
 	/* (non-Javadoc)

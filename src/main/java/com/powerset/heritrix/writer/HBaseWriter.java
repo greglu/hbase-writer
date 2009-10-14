@@ -129,7 +129,7 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 		HBaseConfiguration hbaseConfiguration = new HBaseConfiguration();
 		if (zkQuorum != null && zkQuorum.length() > 0) {
 			LOG.info("setting zookeeper quorum to : " + zkQuorum);
-			hbaseConfiguration.set(HConstants.ZOOKEEPER_QUORUM, zkQuorum);
+			hbaseConfiguration.setStrings(HConstants.ZOOKEEPER_QUORUM, zkQuorum.split(","));
 		}
 		LOG.debug("zookeeper quorum value: " + hbaseConfiguration.get(HConstants.ZOOKEEPER_QUORUM));
 		createCrawlTable(hbaseConfiguration, tableName);

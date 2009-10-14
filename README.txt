@@ -21,18 +21,17 @@ TABLE OF CONTENTS
 * BUILDING THE JAR
 * BUILDING THE SITE-REPORT
 
-The heritrix-hadoop-dfs-writer-processor is an extension to the Heritrix open
+The hbase-writer is an extension to the Heritrix open
 source crawler written by the Internet Archive (http://crawler.archive.org/)
-that enables it to store crawled content directly into HDFS, the Hadoop
-Distributed FileSystem (http://lucene.apache.org/hadoop/).  Hadoop implements
+that enables it to store crawled content directly into HBase, the Hadoop
+Distributed Database (http://hbase.org/  http://hadoop.apache.org/).  Hadoop implements
 the Map/Reduce distributed computation framework on top of HDFS.  
-heritrix-hadoop-dfs-writer-processor writes crawled content into SequenceFile
-format which is directly supported by the Map/Reduce framework and has support
-for compression.  This facilitates running high-speed, distributed computations
-over content crawled with Heritrix.
+hbase-writer-processor writes crawled content into hbase table records with rowkeys.
+Having the crawled data in hbase tables is directly supported by the Map/Reduce framework.  
+This facilitates running high-speed, distributed computations over content crawled with Heritrix.
 
-The current version of heritrix-hadoop-dfs-writer-processor assumes version
-2.0.x of Heritrix and version 0.18.x of Hadoop.  Newer versions of Hadoop
+The current version of hbase-writer assumes version
+2.0.x of Heritrix and version 0.20.x of Hadoop & HBase.  Newer versions of HBase, Hadoop
 and Heritrix may continue to work with this connector as long as the pertinent
 APIs have not changed.  Just replace the jar files with the newer versions.
 
@@ -46,6 +45,7 @@ QUCIK SETUP
 
   hbase-writer-x.x.x.jar
   hbase-x.x.x.jar
+  zookeeper-x.x.x.jar
   hadoop-x.x.x-core.jar
   log4j-x.x.x.jar
 
@@ -60,13 +60,16 @@ On the "Settings for sheet 'global'":
 - Click on a 'details' link and add new processor com.powerset.heritrix.writer.HBaseWriterProcessor.
 - Return to the global sheet and set this as your writer (the page will not draw completely if
 did not type in the name of the processor properly -- see heritrix_out.log for errors).
-- Set at least the master and table configuration for HBaseWriterProcessor.
+- Set at least the zkquorum and table configuration for HBaseWriterProcessor.
 
-master
-  The host and port of the hbase master server.
+zkquorum
+  The zookeeper quroum that serves the hbase master address.  Since hbase-0.20.0, the master server's address is returned by the zookeeper quorum.
+  So this value is a comma seperated list of the zk quorum.
+  i.e.: zkHost1,zkHost2,zkHost3
 
 table
-  Which table to crawl into.
+  Which table in HBase to write the crawl to.  This table will be created automatically if it doesnt exist.
+  i.e.: Webtable
 
 COMPILING THE SOURCE
 ====================
@@ -79,9 +82,10 @@ BUILDING THE JAR
 The hbase-writer-x.x.x.jar should be in the target/ directory.  
 You can get the hadoop, hbase and log4j dependency jars from your ${HOME}/.m2/repository/ directory.
 For example:
-  cp ${HOME}/.m2/repository/org/apache/hadoop/hbase/0.18.0/hbase-0.18.0.jar ${HERITRIX_HOME}/lib/
-  cp ${HOME}/.m2/repository/org/apache/hadoop/hadoop-core/0.18.0/hadoop-core-0.18.0.jar ${HERITRIX_HOME}/lib/ 
-  cp ${HOME}/.m2/repository/log4j/log4j/1.2.14/log4j-1.2.14.jar ${HERITRIX_HOME}/lib/
+  cp ${HOME}/.m2/repository/org/apache/hadoop/hbase/0.20.1/hbase-0.20.1.jar ${HERITRIX_HOME}/lib/
+  cp ${HOME}/.m2/repository/org/apache/hadoop/zookeeper/3.2.1/zookeeper-3.2.1.jar ${HERITRIX_HOME}/lib/
+  cp ${HOME}/.m2/repository/org/apache/hadoop/hadoop-core/0.20.1/hadoop-core-0.20.1.jar ${HERITRIX_HOME}/lib/ 
+  cp ${HOME}/.m2/repository/log4j/log4j/1.2.15/log4j-1.2.15.jar ${HERITRIX_HOME}/lib/
   
 UPGRADING TO NEW HADOOP/HBASE/HERITRIX VERSIONS
 ================================================
@@ -95,8 +99,9 @@ A sample settings.xml file:
 	  <id>myBuild</id>
 	  <properties>
             <heritrix.version>2.0.2</heritrix.version>
-            <hbase.version>0.18.1</hbase.version>
-            <hadoop.version>0.18.1</hadoop.version>
+            <hbase.version>0.20.1</hbase.version>
+            <hadoop.version>0.20.1</hadoop.version>
+            <zookeeper.version>3.2.1</zookeeper.version>
 	  </properties>
 	</profile>
   </profiles>

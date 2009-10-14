@@ -22,3 +22,11 @@ Name of the HBase table to write crawl to
 
 zkquorum-description:
 quorum of zk hosts that describe where the hbase master is.
+
+write-only-new-records-description:
+If set to true, only write new rowkey records (urls) to hbase.  
+Default is set to false, which writes all urls that are crawled.
+
+process-only-new-records-description:
+If set to true, only process (fetch and parse) new rowkey records (urls) to crawl.  
+Default is set to false, which fetchs and parses all urls, even if they exist in hbase.

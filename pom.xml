@@ -179,6 +179,13 @@
       <artifactId>hbase</artifactId>
        <version>${hbase.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>zookeeper</artifactId>
+       <version>${zookeeper.version}</version>
+       <scope>runtime</scope>
+    </dependency>
     
     <dependency>
        <groupId>org.archive.heritrix</groupId>
@@ -384,8 +391,11 @@
 
      <jdk.version>1.6</jdk.version>
      
+     <!-- HBase dependencies -->
      <hadoop.version>0.20.1</hadoop.version>
-     <hbase.version>0.20.0</hbase.version>
+     <hbase.version>0.20.1</hbase.version>
+     <zookeeper.version>3.2.1</zookeeper.version>
+     <!-- End of HBase dependencies -->
 
      <!-- Heritrix2 dependencies, check the heritrix lib/ folder if any are missing. -->
      <heritrix.version>2.0.2</heritrix.version>     
