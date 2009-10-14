@@ -6,7 +6,7 @@
   <groupId>com.powerset.heritrix</groupId>
   <artifactId>hbase-writer</artifactId>
   <packaging>jar</packaging>
-  <version>0.20.1</version>
+  <version>0.20.2-SNAPSHOT</version>
   <name>HBase Writer</name>
   <description>A library for writing Heritrix2 output directly as records to an HBase table.</description>
   <url>http://code.google.com/p/hbase-writer</url>
