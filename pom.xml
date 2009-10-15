@@ -70,7 +70,7 @@
                 <sendOnSuccess>false</sendOnSuccess>
                 <sendOnWarning>true</sendOnWarning>
                 <configuration>
-                        <recipients>rsmith@questio.com</recipients>
+                        <recipients>rsmith@opensoucemasters.com</recipients>
                 </configuration>
         </notifier>
     </notifiers>

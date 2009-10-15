@@ -71,6 +71,9 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	
 	/** The client. */
 	private final HTable client;
+	
+	// TODO: Add this string to HConstants
+	private static String ZOOKEEPER_CLIENT_PORT = "hbase.zookeeper.property.clientPort";
 	// TODO: make this variable configurable in the heritrix sheet:
 	// CONTENT_COLUMN_FAMILY
 	/** The Constant CONTENT_COLUMN_FAMILY. */
@@ -127,17 +130,19 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 			throw new IllegalArgumentException("Must specify a table name");
 		}
 		HBaseConfiguration hbaseConfiguration = new HBaseConfiguration();
+		// set the zk quorum list
 		if (zkQuorum != null && zkQuorum.length() > 0) {
 			LOG.info("setting zookeeper quorum to : " + zkQuorum);
 			hbaseConfiguration.setStrings(HConstants.ZOOKEEPER_QUORUM, zkQuorum.split(","));
 		}
 		LOG.debug("zookeeper quorum value: " + hbaseConfiguration.get(HConstants.ZOOKEEPER_QUORUM));
+		// set the client port
 		if (zkClientPort > 0) {
 			LOG.info("setting zookeeper client Port to : " + zkClientPort);
-			// TODO: Add this string to HConstants
-			hbaseConfiguration.setInt("hbase.zookeeper.property.clientPort", zkClientPort);
+			hbaseConfiguration.setInt(ZOOKEEPER_CLIENT_PORT, zkClientPort);
 		}
-		LOG.debug("zookeeper quorum value: " + hbaseConfiguration.get(HConstants.ZOOKEEPER_QUORUM));
+		LOG.debug("zookeeper client port value: " + hbaseConfiguration.get(ZOOKEEPER_CLIENT_PORT));
+		// create a crawl table
 		createCrawlTable(hbaseConfiguration, tableName);
 		this.client = new HTable(hbaseConfiguration, tableName);
 	}
@@ -213,7 +218,7 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 		// create the hbase friendly rowkey
 		String rowKey = Keying.createKey(url);
 		if (LOG.isTraceEnabled()) {
-			LOG.trace("Writing " + url + " as " + rowKey.toString());
+			LOG.trace("Writing " + url + " as " + rowKey);
 		}
 		// create an hbase updateable object (the put object)
 		// Constructor takes the rowkey as the only argument

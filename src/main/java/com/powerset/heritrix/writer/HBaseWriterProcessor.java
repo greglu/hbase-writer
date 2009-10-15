@@ -61,7 +61,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 	private static final long serialVersionUID = 7166781798179114353L;
 
 	/** The LOG. */
-	private final Logger LOG = Logger.getLogger(this.getClass().getName());
+	private static final Logger LOG = Logger.getLogger("HBaseWriterProcessor");
 
 	/** Commas-seperated list of Hostnames in the zookeeper quorum. */
 	@Immutable
@@ -117,7 +117,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 	private transient WriterPool pool = null;
 	
 	/** The server cache. */
-	private ServerCache serverCache;
+	private transient ServerCache serverCache;
 	
 	/** The max active. */
 	private int maxActive;
@@ -334,14 +334,14 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 					LOG.debug("Not A NEW Record - Url: "
 								+ url
 								+ " has the existing rowkey: "
-								+ row.toString()
+								+ row
 								+ " and has cell data.");
 				}
 				return false;
 			}
 		} catch (IOException e) {
 			LOG.error("Failed to determine if record: "
-							+ row.toString()
+							+ row
 							+ " is a new record due to IOExecption.  Deciding the record is already existing for now. \n"
 							+ e.getMessage());
 			return false;
@@ -350,7 +350,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 				getPool().returnFile(writerPoolMember);
 			} catch (IOException e) {
 				LOG.error("Failed to add back writer to the pool after checking if a rowkey is new or existing: "
-								+ row.toString() + "\n" + e.getMessage());
+								+ row + "\n" + e.getMessage());
 				return false;
 			}
 		}
