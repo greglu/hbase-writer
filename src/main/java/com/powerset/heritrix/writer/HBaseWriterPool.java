@@ -39,9 +39,11 @@ public class HBaseWriterPool extends WriterPool {
 	 * 
 	 * @param zkQuorum the list of zookeeper quorum servers that serve HBase, comma seperated.  
 	 * 			i.e.:  zkHost1,zkHost2,zkHost3
+	 * @param zkClientPort the port that clients should connect to on the given zk quorum servers.   
+	 * 			i.e.:  2181
 	 * @param table the table name in HBase
-	 * @param poolMaximumActive the pool maximum active
-	 * @param poolMaximumWait the pool maximum wait
+	 * @param poolMaximumActive the maximum number of writers in the writer pool.
+	 * @param poolMaximumWait the maximum waittime for all writers in the pool.
 	 */
 	public HBaseWriterPool(final String zkQuorum, final int zkClientPort, final String table, final int poolMaximumActive, final int poolMaximumWait) {
 		// Below is hard to follow. Its invocation of this classes super

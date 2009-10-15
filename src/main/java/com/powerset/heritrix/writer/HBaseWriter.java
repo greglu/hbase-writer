@@ -72,8 +72,6 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	/** The client. */
 	private final HTable client;
 	
-	// TODO: Add this string to HConstants
-	private static String ZOOKEEPER_CLIENT_PORT = "hbase.zookeeper.property.clientPort";
 	// TODO: make this variable configurable in the heritrix sheet:
 	// CONTENT_COLUMN_FAMILY
 	/** The Constant CONTENT_COLUMN_FAMILY. */
@@ -103,7 +101,10 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	// TODO: make this variable configurable in the heritrix sheet:
 	/** The Constant REQUEST_COLUMN. */
 	private static final String REQUEST_COLUMN_NAME = "request";
-
+	// TODO: Add this string to HConstants
+	/** the zk client port, default is 2181 */
+	private static String ZOOKEEPER_CLIENT_PORT = "hbase.zookeeper.property.clientPort";
+	
 	/**
 	 * Gets the HTable client.
 	 * 
@@ -119,6 +120,10 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	 * @param zkQuorum 
 	 * 		the zookeeper quorum. The list of hosts that make up you zookeeper quorum.  
 	 * 		i.e.:  zkHost1,zkHost2,zkHost3  
+	 * @param zkClientPort
+	 * 		the zookeeper client port that clients should try to connect on for 
+	 * 		servers in the zk quorum.  This value is analgous to the hase-site.xml config parameter:
+	 * 		hbase.zookeeper.property.clientPort
 	 * @param tableName 
 	 * 		the table in hbase to write to.  i.e. : webtable
 	 * 
@@ -135,13 +140,11 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 			LOG.info("setting zookeeper quorum to : " + zkQuorum);
 			hbaseConfiguration.setStrings(HConstants.ZOOKEEPER_QUORUM, zkQuorum.split(","));
 		}
-		LOG.debug("zookeeper quorum value: " + hbaseConfiguration.get(HConstants.ZOOKEEPER_QUORUM));
 		// set the client port
 		if (zkClientPort > 0) {
 			LOG.info("setting zookeeper client Port to : " + zkClientPort);
 			hbaseConfiguration.setInt(ZOOKEEPER_CLIENT_PORT, zkClientPort);
 		}
-		LOG.debug("zookeeper client port value: " + hbaseConfiguration.get(ZOOKEEPER_CLIENT_PORT));
 		// create a crawl table
 		createCrawlTable(hbaseConfiguration, tableName);
 		this.client = new HTable(hbaseConfiguration, tableName);
@@ -290,10 +293,12 @@ public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstant
 	 * before the object is written.
 	 */
 	protected void processContent(Put put, ReplayInputStream replayInputStream, int streamSize) throws IOException {
-		// process content array and parse it to a new byte array.....
+		// Below is just an example of a typical use case of overriding this method.
+		// I.E.: The goal below is to process the raw content array and parse it to a new byte array.....
 		// byte[] rowKey = put.getRow();
 		// byte[] rawContent = this.getByteArrayFromInputStream(replayInputStream, streamSize)
-		// byte[] someParsedByteArray = ....
+		// // process rawContent and create output to store in new columns. 
+		// byte[] someParsedByteArray = userDefinedMethondToProcessRawContent(rawContent);
 		// put.add(Bytes.toBytes("some_column_family"), Bytes.toBytes("a_new_column_name"), someParsedByteArray);
 	}
 }
