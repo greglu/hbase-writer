@@ -7,15 +7,15 @@ import org.testng.annotations.Test;
 
 import com.powerset.heritrix.writer.HBaseWriter;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class TestHBaseWriter.
  */
 public class TestHBaseWriter {
 	
-	/** The master. */
+	/** The zkQuorum. */
 	String zkQuorum = "localhost";
 	
+	/** The zkClientPort*/
 	int zkClientPort = 2181;
 	
 	/** The table. */

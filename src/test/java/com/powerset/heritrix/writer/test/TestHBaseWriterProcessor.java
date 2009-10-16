@@ -6,7 +6,6 @@ import org.testng.annotations.Test;
 
 import com.powerset.heritrix.writer.HBaseWriterProcessor;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class TestHBaseWriterProcessor.
  * 
