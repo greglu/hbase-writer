@@ -35,6 +35,7 @@ import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.Keying;
+import org.apache.hadoop.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.archive.io.RecordingInputStream;
 import org.archive.io.RecordingOutputStream;
@@ -208,13 +209,13 @@ public class HBaseWriter extends WriterPoolMember {
 	 * 
 	 * @param curi URI of crawled document
 	 * @param ip IP of remote machine.
-	 * @param ros recording input stream that captured the response
-	 * @param ris recording output stream that captured the GET request
+	 * @param recordingOutputStream recording input stream that captured the response
+	 * @param recordingInputStream recording output stream that captured the GET request
 	 * 
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
-	public void write(final ProcessorURI curi, final String ip, final RecordingOutputStream ros, final RecordingInputStream ris)
-			throws IOException {
+	public void write(final ProcessorURI curi, final String ip, final RecordingOutputStream recordingOutputStream, 
+			final RecordingInputStream recordingInputStream) throws IOException {
 		// generate the target url of the crawled document
 		String url = curi.toString();
 		// create the hbase friendly rowkey
@@ -236,27 +237,33 @@ public class HBaseWriter extends WriterPoolMember {
 				batchPut.add(Bytes.toBytes(CURI_COLUMN_FAMILY), Bytes.toBytes(PATH_FROM_SEED_COLUMN_NAME), Bytes.toBytes(curi.getPathFromSeed().trim()));
 			}
 		}
+		// write the Via string
 		String viaStr = (curi.getVia() != null) ? curi.getVia().toString().trim() : null;
 		if (viaStr != null && viaStr.length() > 0) {
 			batchPut.add(Bytes.toBytes(CURI_COLUMN_FAMILY), Bytes.toBytes(VIA_COLUMN_NAME), Bytes.toBytes(viaStr));
 		}
 		// Write the Crawl Request to the Put object
-		if (ros.getSize() > 0) {
+		if (recordingOutputStream.getSize() > 0) {
 			batchPut.add(Bytes.toBytes(CURI_COLUMN_FAMILY), Bytes.toBytes(REQUEST_COLUMN_NAME), 
-					getByteArrayFromInputStream(ros.getReplayInputStream(), (int) ros.getSize()));
+					getByteArrayFromInputStream(recordingOutputStream.getReplayInputStream(), (int) recordingOutputStream.getSize()));
 		}
 		// Write the Crawl Response to the Put object
-		batchPut.add(Bytes.toBytes(CONTENT_COLUMN_FAMILY), Bytes.toBytes(CONTENT_COLUMN_NAME), 
-				getByteArrayFromInputStream(ris.getReplayInputStream(), (int) ris.getSize()));
-		
-		// reset the input steam for the content processor.
-		ris.getReplayInputStream().setToResponseBodyStart();
-		// process the content (optional)
-		processContent(batchPut, ris.getReplayInputStream(), (int) ris.getSize());
-		// Set crawl time as the timestamp to the Put object.
-		batchPut.setTimeStamp(curi.getFetchBeginTime());
-		// write the Put object to the HBase table
-		this.client.put(batchPut);
+		ReplayInputStream replayInputStream = recordingInputStream.getReplayInputStream();
+        try {
+        	// add the raw content to the table record.
+            batchPut.add(Bytes.toBytes(CONTENT_COLUMN_FAMILY), Bytes.toBytes(CONTENT_COLUMN_NAME),
+            		getByteArrayFromInputStream(replayInputStream, (int) recordingInputStream.getSize()));
+            // reset the input steam for the content processor.
+            replayInputStream.setToResponseBodyStart();
+            // process the content (optional)
+            processContent(batchPut, replayInputStream, (int) recordingInputStream.getSize());
+            // Set crawl time as the timestamp to the Put object.
+            batchPut.setTimeStamp(curi.getFetchBeginTime());
+            // write the Put object to the HBase table
+            this.client.put(batchPut);
+        } finally {
+            IOUtils.closeStream(replayInputStream);
+        }
 	}
 
 	/**
