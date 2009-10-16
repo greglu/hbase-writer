@@ -15,7 +15,7 @@ public class TestHBaseWriter {
 	/** The zkQuorum. */
 	String zkQuorum = "localhost";
 	
-	/** The zkClientPort*/
+	/** The zkClientPort. */
 	int zkClientPort = 2181;
 	
 	/** The table. */

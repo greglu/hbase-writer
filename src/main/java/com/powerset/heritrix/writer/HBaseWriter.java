@@ -43,26 +43,26 @@ import org.archive.io.ReplayInputStream;
 import org.archive.io.WriterPoolMember;
 import org.archive.modules.ProcessorURI;
 
+// TODO: Auto-generated Javadoc
 /**
- * Write crawled content as records to an HBase table. 
+ * Write crawled content as records to an HBase table.
  * Puts content into the 'content:raw_data' column and all else into the
  * 'curi:' column family. Makes a row key of an url transformation. Creates
  * table if it does not exist.
  * 
-	The following is a complete list of columns that get written to by default:
-	
-	content:raw_data
-	
-	curi:ip
-	curi:path-from-seed
-	curi:is-seed
-	curi:via
-	curi:url
-	curi:request
-	
+ * The following is a complete list of columns that get written to by default:
+ * 
+ * content:raw_data
+ * 
+ * curi:ip
+ * curi:path-from-seed
+ * curi:is-seed
+ * curi:via
+ * curi:url
+ * curi:request
  * 
  * <p>
- * Limitations: Hard-coded table schema.  
+ * Limitations: Hard-coded table schema.
  */
 public class HBaseWriter extends WriterPoolMember {
 	
@@ -102,7 +102,7 @@ public class HBaseWriter extends WriterPoolMember {
 	/** The Constant REQUEST_COLUMN. */
 	private static final String REQUEST_COLUMN_NAME = "request";
 	// TODO: Add this string to HConstants
-	/** the zk client port, default is 2181 */
+	/** the zk client port name, this has to match what is in hbase-site.xml for the clientPort config attribute. */
 	private static String ZOOKEEPER_CLIENT_PORT = "hbase.zookeeper.property.clientPort";
 	
 	/**
@@ -117,15 +117,12 @@ public class HBaseWriter extends WriterPoolMember {
 	/**
 	 * Instantiates a new HBaseWriter for the WriterPool to use in heritrix2.
 	 * 
-	 * @param zkQuorum 
-	 * 		the zookeeper quorum. The list of hosts that make up you zookeeper quorum.  
-	 * 		i.e.:  zkHost1,zkHost2,zkHost3  
-	 * @param zkClientPort
-	 * 		the zookeeper client port that clients should try to connect on for 
-	 * 		servers in the zk quorum.  This value is analgous to the hase-site.xml config parameter:
-	 * 		hbase.zookeeper.property.clientPort
-	 * @param tableName 
-	 * 		the table in hbase to write to.  i.e. : webtable
+	 * @param zkQuorum the zookeeper quorum. The list of hosts that make up you zookeeper quorum.
+	 * i.e.:  zkHost1,zkHost2,zkHost3
+	 * @param zkClientPort the zookeeper client port that clients should try to connect on for
+	 * servers in the zk quorum.  This value is analgous to the hase-site.xml config parameter:
+	 * hbase.zookeeper.property.clientPort
+	 * @param tableName the table in hbase to write to.  i.e. : webtable
 	 * 
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
@@ -270,9 +267,10 @@ public class HBaseWriter extends WriterPoolMember {
 	/**
 	 * Read the ReplayInputStream and write it to the given BatchUpdate with the given column.
 	 * 
-	 * @param column the column for the given data.
 	 * @param replayInputStream the ris the cell data as a replay input stream
 	 * @param streamSize the size
+	 * 
+	 * @return the byte array from input stream
 	 * 
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
@@ -294,10 +292,13 @@ public class HBaseWriter extends WriterPoolMember {
 	 * 
 	 * For Example : html parsing, text extraction, analysis and transformation
 	 * and storing the results in new column families/columns using the batch
-	 * update object.
+	 * update object. Or even saving the values in other custom hbase tables or data sources.
 	 * 
-	 * @param batchUpdate the batchUpdate - the hbase row object whose state can be manipulated
-	 * before the object is written.
+	 * @param put the stateful put object containg all the row data to be written.
+	 * @param replayInputStream the replay input stream containing the raw content gotten by heritrix crawler.
+	 * @param streamSize the stream size
+	 * 
+	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	protected void processContent(Put put, ReplayInputStream replayInputStream, int streamSize) throws IOException {
 		// Below is just an example of a typical use case of overriding this method.

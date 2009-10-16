@@ -75,19 +75,24 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 	@Immutable
 	public static final Key<String> TABLE = Key.make("crawl");
 
-	/** 
-	 * If set to true, then only write urls that are new rowkey records. Default is false, which will write all urls to the HBase table.  
-	 * Heritrix is good about not hitting the same url twice, so this feature is to ensure that you can run multiple sessions 
-	 * of the same crawl configuration and not write the same url more than once to the same hbase table. You may just want to crawl a site to 
-	 * see what new urls have been added over time, or continue where you left off on a terminated crawl.  Heritrix itself does support this
-	 * functionalty by supporting "Checkpoints" during a crawl session, so this may not be a necessary option. 
+	/** If set to true, then only write urls that are new rowkey records. 
+	 *  Default is false, which will write all urls to the HBase table. 
+	 * Heritrix is good about not hitting the same url twice, so this feature 
+	 * is to ensure that you can run multiple sessions of the same crawl 
+	 * configuration and not write the same url more than once to the same 
+	 * hbase table. You may just want to crawl a site to see what new urls have 
+	 * been added over time, or continue where you left off on a terminated 
+	 * crawl.  Heritrix itself does support this functionalty by supporting 
+	 * "Checkpoints" during a crawl session, so this may not be a necessary 
+	 * option. 
 	 */
 	@Immutable
 	public static final Key<Boolean> WRITE_ONLY_NEW_RECORDS = Key.make(false);
 	
-	/** 
-	 * If set to true, then only process urls that are new rowkey records. Default is false, which will process all urls to the HBase table.  
-	 * In this mode, Heritrix wont even fetch and parse the content served at the url if it already exists as a rowkey in the HBase table. 
+	/** If set to true, then only process urls that are new rowkey records. 
+	 * Default is false, which will process all urls to the HBase table. 
+	 * In this mode, Heritrix wont even fetch and parse the content served at 
+	 * the url if it already exists as a rowkey in the HBase table. 
 	 */
 	@Immutable
 	public static final Key<Boolean> PROCESS_ONLY_NEW_RECORDS = Key.make(false);

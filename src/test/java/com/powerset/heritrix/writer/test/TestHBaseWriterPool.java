@@ -14,7 +14,7 @@ public class TestHBaseWriterPool {
 	/** The zkQuorum. */
 	String zkQuorum = "locahost";
 	
-	/** zkClientPort */
+	/** zkClientPort. */
 	int zkClientPort = 2181;
 	
 	/** The table. */

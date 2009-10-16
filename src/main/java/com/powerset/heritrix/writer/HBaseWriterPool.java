@@ -29,6 +29,7 @@ import org.archive.io.DefaultWriterPoolSettings;
 import org.archive.io.WriterPool;
 import org.archive.io.WriterPoolMember;
 
+// TODO: Auto-generated Javadoc
 /**
  * A pool of HBaseWriters.
  */
@@ -37,10 +38,10 @@ public class HBaseWriterPool extends WriterPool {
 	/**
 	 * Constructor.
 	 * 
-	 * @param zkQuorum the list of zookeeper quorum servers that serve HBase, comma seperated.  
-	 * 			i.e.:  zkHost1,zkHost2,zkHost3
-	 * @param zkClientPort the port that clients should connect to on the given zk quorum servers.   
-	 * 			i.e.:  2181
+	 * @param zkQuorum the list of zookeeper quorum servers that serve HBase, comma seperated.
+	 * i.e.:  zkHost1,zkHost2,zkHost3
+	 * @param zkClientPort the port that clients should connect to on the given zk quorum servers.
+	 * i.e.:  2181
 	 * @param table the table name in HBase
 	 * @param poolMaximumActive the maximum number of writers in the writer pool.
 	 * @param poolMaximumWait the maximum waittime for all writers in the pool.
