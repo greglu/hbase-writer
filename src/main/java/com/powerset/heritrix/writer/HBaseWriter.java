@@ -254,6 +254,7 @@ public class HBaseWriter extends WriterPoolMember {
             batchPut.add(Bytes.toBytes(CONTENT_COLUMN_FAMILY), Bytes.toBytes(CONTENT_COLUMN_NAME),
             		getByteArrayFromInputStream(replayInputStream, (int) recordingInputStream.getSize()));
             // reset the input steam for the content processor.
+            replayInputStream = recordingInputStream.getReplayInputStream();
             replayInputStream.setToResponseBodyStart();
             // process the content (optional)
             processContent(batchPut, replayInputStream, (int) recordingInputStream.getSize());
