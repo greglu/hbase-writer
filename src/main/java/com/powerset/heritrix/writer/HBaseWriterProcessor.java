@@ -205,7 +205,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 	 */
 	protected String getHostAddress(ProcessorURI curi) {
 		// special handling for DNS URIs: want address of DNS server
-		if (curi.getUURI().getScheme().toLowerCase().equals("dns")) {
+		if (curi.getUURI().getScheme().equalsIgnoreCase("dns")) {
 			return (String) curi.getData().get(
 					ModuleAttributeConstants.A_DNS_SERVER_IP_LABEL);
 		}
@@ -268,13 +268,13 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 	 */
 	protected boolean shouldWrite(ProcessorURI curi) {
 		boolean retVal;
-		String scheme = curi.getUURI().getScheme().toLowerCase();
+		String scheme = curi.getUURI().getScheme();
 		// determine the return value of the uri request
-		if (scheme.equals("dns")) {
+		if (scheme.equalsIgnoreCase("dns")) {
 			retVal = curi.getFetchStatus() == FetchStatusCodes.S_DNS_SUCCESS;
-		} else if (scheme.equals("http") || scheme.equals("https")) {
+		} else if (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https")) {
 			retVal = curi.getFetchStatus() > 0 && curi.getHttpMethod() != null;
-		} else if (scheme.equals("ftp")) {
+		} else if (scheme.equalsIgnoreCase("ftp")) {
 			retVal = curi.getFetchStatus() == 200;
 		} else {
 			curi.getAnnotations().add("unwritten:scheme");

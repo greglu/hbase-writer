@@ -8,7 +8,7 @@
   <packaging>jar</packaging>
   <version>0.20.3-SNAPSHOT</version>
   <name>HBase Writer</name>
-  <description>A library for writing Heritrix2 output directly as records to an HBase table.</description>
+  <description>A library for writing Heritrix2 output directly to an HBase table as records.</description>
   <url>http://code.google.com/p/hbase-writer</url>
   
   <inceptionYear>2007</inceptionYear>
@@ -171,7 +171,7 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-core</artifactId>
-       <version>${hadoop.version}</version>
+      <version>${hadoop.version}</version>
     </dependency>
     
     <dependency>
@@ -197,6 +197,7 @@
 	   <groupId>org.archive.heritrix</groupId>
 	   <artifactId>engine</artifactId>
 	   <version>${heritrix.version}</version>
+	   <scope>runtime</scope>
     </dependency>
     
     <dependency>
@@ -209,6 +210,7 @@
       <groupId>fastutil</groupId>
       <artifactId>fastutil</artifactId>
       <version>${fastutil.version}</version>
+      <scope>runtime</scope>
     </dependency>
     
     <dependency>

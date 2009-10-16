@@ -36,7 +36,6 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.Keying;
 import org.apache.log4j.Logger;
-import org.archive.io.ArchiveFileConstants;
 import org.archive.io.RecordingInputStream;
 import org.archive.io.RecordingOutputStream;
 import org.archive.io.ReplayInputStream;
@@ -64,7 +63,7 @@ import org.archive.modules.ProcessorURI;
  * <p>
  * Limitations: Hard-coded table schema.  
  */
-public class HBaseWriter extends WriterPoolMember implements ArchiveFileConstants {
+public class HBaseWriter extends WriterPoolMember {
 	
 	/** The LOG. */
 	private final Logger LOG = Logger.getLogger(this.getClass().getName());
