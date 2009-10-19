@@ -165,7 +165,7 @@
     <dependency>
        <groupId>log4j</groupId>
        <artifactId>log4j</artifactId>
-       <version>1.2.14</version>
+       <version>${log4j.version}</version>
     </dependency>
     
     <dependency>
@@ -391,12 +391,15 @@
      <hbase-writer.distribution-manager.snapshots>http://repo1.opensourcemasters.org:8081/nexus/content/repositories/snapshots/</hbase-writer.distribution-manager.snapshots>
      <hbase-writer.distribution-manager.report-site>/usr/local/www/projects.osm/hbase-writer-site/</hbase-writer.distribution-manager.report-site>
 
+	 <!-- Hadoop and hbase both require Java6 to run -->
      <jdk.version>1.6</jdk.version>
      
      <!-- HBase dependencies -->
      <hadoop.version>0.20.1</hadoop.version>
      <hbase.version>0.20.1</hbase.version>
      <zookeeper.version>3.2.1</zookeeper.version>
+     <!-- TODO: add log4j-1.2.15 to a maven repo -->
+     <log4j.version>1.2.14</log4j.version>
      <!-- End of HBase dependencies -->
 
      <!-- Heritrix2 dependencies, check the heritrix lib/ folder if any are missing. -->

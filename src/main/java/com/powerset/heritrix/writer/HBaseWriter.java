@@ -292,9 +292,10 @@ public class HBaseWriter extends WriterPoolMember {
 	 * 
 	 * For Example : html parsing, text extraction, analysis and transformation
 	 * and storing the results in new column families/columns using the batch
-	 * update object. Or even saving the values in other custom hbase tables or data sources.
+	 * update object. Or even saving the values in other custom hbase tables 
+	 * or other remote data sources. (a.k.a. anything you want)
 	 * 
-	 * @param put the stateful put object containg all the row data to be written.
+	 * @param put the stateful put object containing all the row data to be written.
 	 * @param replayInputStream the replay input stream containing the raw content gotten by heritrix crawler.
 	 * @param streamSize the stream size
 	 * 
