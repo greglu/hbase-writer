@@ -169,8 +169,8 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 		this.serverCache = context.get(this, SERVER_CACHE);
 		this.maxActive = context.get(this, POOL_MAX_ACTIVE).intValue();
 		this.maxWait = context.get(this, POOL_MAX_WAIT).intValue();
-		this.zkQuorum = context.get(this, ZKQUORUM);
-		this.zkClientPort = context.get(this, ZKCLIENTPORT);
+		this.zkQuorum = context.get(this, ZKQUORUM).trim();
+		this.zkClientPort = context.get(this, ZKCLIENTPORT).intValue();
 		this.tableName = context.get(this, TABLE);
 		this.onlyWriteNewRecords = context.get(this, WRITE_ONLY_NEW_RECORDS).booleanValue();
 		this.onlyProcessNewRecords = context.get(this, PROCESS_ONLY_NEW_RECORDS).booleanValue();
