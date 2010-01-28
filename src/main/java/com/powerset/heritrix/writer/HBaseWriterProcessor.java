@@ -63,11 +63,11 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 	/** The LOG. */
 	private static final Logger LOG = Logger.getLogger("HBaseWriterProcessor");
 
-	/** Commas-seperated list of Hostnames in the zookeeper quorum. */
+	/** Commas-separated list of Host names in the Zk quorum. */
 	@Immutable
 	public static final Key<String> ZKQUORUM = Key.make("localhost");
 
-	/** The port that clients should connect on to contact their zk quorum hsots. */
+	/** The port that clients should connect on to contact their Zk quorum hosts. */
 	@Immutable
 	public static final Key<Integer> ZKCLIENTPORT = Key.make(2181);
 	
@@ -133,7 +133,7 @@ public class HBaseWriterProcessor extends Processor implements Initializable, Cl
 	/** The max content size. */
 	private int maxContentSize;
 	
-	/** The comma seperated string of hostnames that make up the zookeeper quorum. */
+	/** The comma separated string of host names that make up the zk quorum. */
 	private String zkQuorum;
 	
 	/** The port that zk clients should connect to for information. */
