@@ -509,6 +509,7 @@ package org.archive.io.hbase;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
@@ -530,7 +531,7 @@ import org.archive.modules.CrawlURI;
  * HBase implementation.
  *
  */
-public class HBaseWriter {
+public class HBaseWriter implements Serializer {
 
     private final Logger LOG = Logger.getLogger(this.getClass().getName());
 
@@ -714,6 +715,7 @@ public class HBaseWriter {
      */
     public void write(final CrawlURI curi, final String ip, final RecordingOutputStream recordingOutputStream, 
             final RecordingInputStream recordingInputStream) throws IOException {
+
         // generate the target url of the crawled document
         String url = curi.toString();
 
@@ -725,43 +727,68 @@ public class HBaseWriter {
 
         // create an hbase updateable object (the put object)
         // Constructor takes the rowkey as the only argument
-        Put batchPut = new Put(Bytes.toBytes(rowKey));
+        byte[] key = getHbaseOptions().isMd5Key() ? DigestUtils.md5(rowKey) : Bytes.toBytes(rowKey);
+        Put batchPut = new Put(key);
 
         // write the target url to the url column
-        batchPut.add(Bytes.toBytes(getHbaseOptions().getCuriColumnFamily()), Bytes.toBytes(getHbaseOptions().getUrlColumnName()), curi.getFetchBeginTime(), Bytes.toBytes(url));
+        batchPut.add(Bytes.toBytes(getHbaseOptions().getCuriColumnFamily()),
+        		Bytes.toBytes(getHbaseOptions().getUrlColumnName()),
+        		curi.getFetchBeginTime(),
+        		serialize(Bytes.toBytes(url)));
+
         // write the target ip to the ip column
-        batchPut.add(Bytes.toBytes(getHbaseOptions().getCuriColumnFamily()), Bytes.toBytes(getHbaseOptions().getIpColumnName()), curi.getFetchBeginTime(), Bytes.toBytes(ip));
+        batchPut.add(Bytes.toBytes(getHbaseOptions().getCuriColumnFamily()),
+        		Bytes.toBytes(getHbaseOptions().getIpColumnName()),
+        		curi.getFetchBeginTime(),
+        		serialize(Bytes.toBytes(ip)));
+
         // is the url part of the seed url (the initial url(s) used to start the crawl)
         if (curi.isSeed()) {
-            batchPut.add(Bytes.toBytes(getHbaseOptions().getCuriColumnFamily()), Bytes.toBytes(getHbaseOptions().getIsSeedColumnName()), Bytes.toBytes(Boolean.TRUE.booleanValue()));
+            batchPut.add(Bytes.toBytes(getHbaseOptions().getCuriColumnFamily()),
+            		Bytes.toBytes(getHbaseOptions().getIsSeedColumnName()),
+            		serialize(Bytes.toBytes(Boolean.TRUE.booleanValue())));
+
             if (curi.getPathFromSeed() != null && curi.getPathFromSeed().trim().length() > 0) {
-                batchPut.add(Bytes.toBytes(getHbaseOptions().getCuriColumnFamily()), Bytes.toBytes(getHbaseOptions().getPathFromSeedColumnName()), Bytes.toBytes(curi.getPathFromSeed().trim()));
+                batchPut.add(Bytes.toBytes(getHbaseOptions().getCuriColumnFamily()),
+                		Bytes.toBytes(getHbaseOptions().getPathFromSeedColumnName()),
+                		serialize(Bytes.toBytes(curi.getPathFromSeed().trim())));
             }
         }
+
         // write the Via string
         String viaStr = (curi.getVia() != null) ? curi.getVia().toString().trim() : null;
         if (viaStr != null && viaStr.length() > 0) {
-            batchPut.add(Bytes.toBytes(getHbaseOptions().getCuriColumnFamily()), Bytes.toBytes(getHbaseOptions().getViaColumnName()), Bytes.toBytes(viaStr));
+            batchPut.add(Bytes.toBytes(getHbaseOptions().getCuriColumnFamily()),
+            		Bytes.toBytes(getHbaseOptions().getViaColumnName()),
+            		serialize(Bytes.toBytes(viaStr)));
         }
+
         // Write the Crawl Request to the Put object
         if (recordingOutputStream.getSize() > 0) {
-            batchPut.add(Bytes.toBytes(getHbaseOptions().getCuriColumnFamily()), Bytes.toBytes(getHbaseOptions().getRequestColumnName()), 
-                    getByteArrayFromInputStream(recordingOutputStream.getReplayInputStream(), (int) recordingOutputStream.getSize()));
+            batchPut.add(Bytes.toBytes(getHbaseOptions().getCuriColumnFamily()),
+            		Bytes.toBytes(getHbaseOptions().getRequestColumnName()),
+            		serialize(getByteArrayFromInputStream(recordingOutputStream.getReplayInputStream(),
+            				(int) recordingOutputStream.getSize())));
         }
+
         // Write the Crawl Response to the Put object
         ReplayInputStream replayInputStream = recordingInputStream.getReplayInputStream();
         try {
             // add the raw content to the table record.
-            batchPut.add(Bytes.toBytes(getHbaseOptions().getContentColumnFamily()), Bytes.toBytes(getHbaseOptions().getContentColumnName()),
-                    getByteArrayFromInputStream(replayInputStream, (int) recordingInputStream.getSize()));
+            batchPut.add(Bytes.toBytes(getHbaseOptions().getContentColumnFamily()),
+            		Bytes.toBytes(getHbaseOptions().getContentColumnName()),
+            		serialize(getByteArrayFromInputStream(replayInputStream, (int) recordingInputStream.getSize())));
+
             // reset the input steam for the content processor.
             replayInputStream = recordingInputStream.getReplayInputStream();
             replayInputStream.setToResponseBodyStart();
+
             // process the content (optional)
             processContent(batchPut, replayInputStream, (int) recordingInputStream.getSize());
+
             // TODO: add an option to manually set the timestamp value of the batchPut object
             // Set crawl time as the timestamp to the Put object.
-            //batchPut.setTimeStamp(curi.getFetchBeginTime());
+            // batchPut.setTimeStamp(curi.getFetchBeginTime());
 
             // write the Put object to the HBase table
             getClient().put(batchPut);
@@ -769,4 +796,13 @@ public class HBaseWriter {
             IOUtils.closeStream(replayInputStream);
         }
     }
+
+    @Override
+    public byte[] serialize(byte[] bytes) {
+		if (getHbaseOptions().getSerializer() != null)
+			return getHbaseOptions().getSerializer().serialize(bytes);
+
+		return bytes;
+	}
+
 }

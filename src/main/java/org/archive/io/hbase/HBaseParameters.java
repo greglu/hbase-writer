@@ -561,6 +561,8 @@ public class HBaseParameters implements ArchiveFileConstants {
     private String urlColumnName = URL_COLUMN_NAME;
     private String requestColumnName = REQUEST_COLUMN_NAME;
 
+    private boolean md5Key = false;
+    private Serializer serializer = null;
 
     public String getContentColumnFamily() {
         return contentColumnFamily;
@@ -619,4 +621,16 @@ public class HBaseParameters implements ArchiveFileConstants {
     public String getZookeeperClientPort() {
         return ZOOKEEPER_CLIENT_PORT;
     }
+	public Serializer getSerializer() {
+		return serializer;
+	}
+	public void setSerializer(Serializer serializer) {
+		this.serializer = serializer;
+	}
+	public boolean isMd5Key() {
+		return this.md5Key;
+	}
+	public void setMd5Key(boolean md5Key) {
+		this.md5Key = md5Key;
+	}
 }

@@ -26,14 +26,96 @@ In turn, these tables are directly supported by the Map/Reduce framework via HBa
 
 = GETTING STARTED = 
 
-HBase-Writer now supports Heritrix 2 and 3. Please refer to the corresponding
-README-Heritrix*.txt files for specific instructions.
+Add the following beans to the disposition chain of your job configuration:
 
-http://code.google.com/p/hbase-writer/wiki/READMEHeritrix2
+---
+<!-- DISPOSITION CHAIN -->
+<bean id="hbaseParameterSettings" class="org.archive.io.hbase.HBaseParameters">
+	<property name="contentColumnFamily" value="newcontent" />
+	<!-- Overwrite more options here -->
+</bean>
 
-http://code.google.com/p/hbase-writer/wiki/READMEHeritrix3
+<bean id="hbaseWriterProcessor" class="org.archive.modules.writer.HBaseWriterProcessor">
+	<property name="zkQuorum" value="localhost" />
+	<property name="zkClientPort" value="2181" />
+	<property name="hbaseTable" value="crawl" />
+	<property name="onlyProcessNewRecords" value="false" />
+	<property name="onlyWriteNewRecords" value="false" />
+	<property name="hbaseParameters">
+		<bean ref="hbaseParameterSettings" />
+	</property>
+</bean>
 
-= COMPILING THE SOURCE =
+<bean id="dispositionProcessors" class="org.archive.modules.DispositionChain">
+	<property name="processors">
+	<list>
+		<!-- write to aggregate archival files... -->
+		<ref bean="hbaseWriterProcessor"/>
+		<!-- other references -->
+	</list>
+	</property>
+</bean>
+---
+
+With the following configurable properties:
+
+org.archive.modules.writer.HBaseWriterProcessor properties:
+
+	zkQuorum
+	  The zookeeper quroum that serves the hbase master address.  Since hbase-0.20.0, the master server's address is returned by the zookeeper quorum.
+	  So this value is a comma seperated list of the zk quorum.
+	  e.g. zkHost1,zkHost2,zkHost3
+
+	zkClientPort
+	  The zookeeper quroum client port that clients should connect to to get HBase information.
+	  e.g. 2181
+
+	hbaseTable
+	  Which table in HBase to write the crawl to.  This table will be created automatically if it doesnt exist.
+	  e.g. Webtable
+
+	onlyWriteNewRecords
+	  Set to "false" by default.  In default mode, heritrix will crawl all urls regardless of existing rowkeys (urls).
+	  By setting this to "true" you ensure that only new urls(rowkeys) are written to the crawl table.
+
+	onlyProcessNewRecords
+	  Set to "false" by default.  In default mode, heritrix will process (fetch and parse) all urls regardless of existing rowkeys (urls).
+	  By setting this to "true" you ensure that only new urls(rowkeys) are processed by heritrix.  Also, if set to "true",
+	  heritrix doesnt download any content that is already existing as a record in the hbase table.
+
+
+org.archive.io.hbase.HBaseParameters properties:
+
+	contentColumnFamily
+	  The column family name for where you want to save the content to. Defaults to "content".
+
+	contentColumnName
+	  The column qualifier name for where you want to save the content to. Defaults to "raw_data" which becomes "content:raw_data"
+
+	curiColumnFamily
+	  The column family name for storing the Crawl URI related information. Defaults to "curi".
+
+	ipColumnName
+	  The column qualifier name for storing the IP address. Defaults to "ip" which becomes "curi:ip".
+
+	pathFromSeedColumnName
+	  The column qualifier name for storing the path from seed. Defaults to "path-from-seed" which becomes "curi:path-from-seed".
+
+	isSeedColumnName
+	  The column qualifier name for storing whether the crawl is a seed. Defaults to "is-seed" which becomes "curi:is-seed".
+
+	viaColumnName
+	  The column qualifier name for storing where it came from. Defaults to "via" which becomes "curi:via".
+
+	urlColumnName
+	  The column qualifier name for storing the URL. Defaults to "url" which becomes "curi:url".
+
+	requestColumnName
+	  The column qualifier name for storing the request. Defaults to "request" which becomes "curi:request".
+
+
+COMPILING THE SOURCE
+====================
 
   mvn clean compile
 
