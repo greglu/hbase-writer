@@ -127,7 +127,4 @@ BUILDING THE SITE REPORT
 ========================
   mvn clean site
 
-PING BACK
-========================
-Thanks to Questio for all the support for releasing this project.
 	
