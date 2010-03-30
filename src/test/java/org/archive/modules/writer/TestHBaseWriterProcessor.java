@@ -1,10 +1,10 @@
-package com.powerset.heritrix.writer.test;
+package org.archive.modules.writer;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.powerset.heritrix.writer.HBaseWriterProcessor;
+import org.archive.modules.writer.HBaseWriterProcessor;
 
 /**
  * The Class TestHBaseWriterProcessor.

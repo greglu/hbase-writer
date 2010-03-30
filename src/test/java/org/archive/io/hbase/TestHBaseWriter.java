@@ -1,11 +1,12 @@
-package com.powerset.heritrix.writer.test;
+package org.archive.io.hbase;
 
 import java.io.IOException;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import com.powerset.heritrix.writer.HBaseWriter;
+import org.archive.io.hbase.HBaseWriter;
+import org.archive.io.hbase.HBaseParameters;
 
 /**
  * The Class TestHBaseWriter.
@@ -40,14 +41,14 @@ public class TestHBaseWriter {
 	public void testCreateHBaseWriter() throws IOException {
 		// Test
 		try {
-			hw = new HBaseWriter(zkQuorum,zkClientPort,null);
+			hw = new HBaseWriter(zkQuorum, zkClientPort, "", null);
 			Assert.assertNull(hw);
 		} catch (IllegalArgumentException e) {
 			Assert.assertNotNull(e);
 		}
 
 		try {
-			hw = new HBaseWriter(zkQuorum, zkClientPort, "");
+			hw = new HBaseWriter(zkQuorum, zkClientPort, null, new HBaseParameters());
 			Assert.assertNull(hw);
 		} catch (IllegalArgumentException e) {
 			Assert.assertNotNull(e);

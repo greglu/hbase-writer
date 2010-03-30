@@ -3,12 +3,12 @@
   	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   	
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.powerset.heritrix</groupId>
+  <groupId>org.archive</groupId>
   <artifactId>hbase-writer</artifactId>
   <packaging>jar</packaging>
-  <version>0.20.4-SNAPSHOT</version>
+  <version>0.9-SNAPSHOT</version>
   <name>HBase Writer</name>
-  <description>A library for writing Heritrix2 output directly to an HBase table as records.</description>
+  <description>A library for writing Heritrix3 output directly to an HBase table as records.</description>
   <url>http://code.google.com/p/hbase-writer</url>
   
   <inceptionYear>2007</inceptionYear>
@@ -97,6 +97,15 @@
       <url>http://builds.archive.org:8080/maven2</url>
     </repository>
     <repository>
+      <id>archive-snapshots</id>
+      <name>Archive Snapshots</name>
+      <url>http://builds.archive.org:8080/maven2</url>
+      <snapshots>
+        <enabled>true</enabled>
+        <checksumPolicy>warn</checksumPolicy>
+      </snapshots>
+    </repository>
+    <repository>
       <id>oracle-releases</id>
       <name>Oracle Repository</name>
       <url>http://download.oracle.com/maven</url>
@@ -144,8 +153,8 @@
 	      <name>Ryan Smith</name>
 	      <email>rsmith@opensourcemasters.org</email>
 	      <url>http://opensourcemasters.org/</url>
-	      <organization>Questio</organization>
-	      <organizationUrl>http://questio.com/</organizationUrl>
+	      <organization>OpenSource Masters</organization>
+	      <organizationUrl>http://opensourcemasters.org/</organizationUrl>
 	      <roles>
 	        <role>Developer</role>
 	      </roles>
@@ -161,13 +170,38 @@
       <classifier>jdk15</classifier>
       <scope>test</scope>
     </dependency>
-    
+
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20090211</version>
+      <scope>test</scope>
+    </dependency>
+
     <dependency>
        <groupId>log4j</groupId>
        <artifactId>log4j</artifactId>
        <version>${log4j.version}</version>
+       <exclusions>
+        <exclusion>
+          <groupId>javax.mail</groupId>
+          <artifactId>mail</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>javax.jms</groupId>
+          <artifactId>jms</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.jdmk</groupId>
+          <artifactId>jmxtools</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.sun.jmx</groupId>
+          <artifactId>jmxri</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
-    
+
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-core</artifactId>
@@ -187,6 +221,12 @@
        <scope>runtime</scope>
     </dependency>
     
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>${springframework.version}</version>
+    </dependency>
+
     <dependency>
        <groupId>org.archive.heritrix</groupId>
        <artifactId>commons</artifactId>
@@ -396,14 +436,15 @@
      
      <!-- HBase dependencies -->
      <hadoop.version>0.20.1</hadoop.version>
-     <hbase.version>0.20.1</hbase.version>
-     <zookeeper.version>3.2.1</zookeeper.version>
+     <hbase.version>0.20.3</hbase.version>
+     <zookeeper.version>3.2.2</zookeeper.version>
      <!-- TODO: add log4j-1.2.15 to a maven repo -->
-     <log4j.version>1.2.14</log4j.version>
+     <log4j.version>1.2.15</log4j.version>
      <!-- End of HBase dependencies -->
 
-     <!-- Heritrix2 dependencies, check the heritrix lib/ folder if any are missing. -->
-     <heritrix.version>2.0.2</heritrix.version>     
+     <!-- Heritrix3 dependencies, check the heritrix lib/ folder if any are missing. -->
+     <springframework.version>2.5.6</springframework.version>
+     <heritrix.version>3.0.0-SNAPSHOT</heritrix.version>
      <fastutil.version>5.0.7</fastutil.version>
      <overlay.commons-pool.version>1.3</overlay.commons-pool.version>
      <overlay.commons-httpclient.version>3.1</overlay.commons-httpclient.version>

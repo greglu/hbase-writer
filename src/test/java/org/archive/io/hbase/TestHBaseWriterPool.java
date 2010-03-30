@@ -1,10 +1,11 @@
-package com.powerset.heritrix.writer.test;
+package org.archive.io.hbase;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.powerset.heritrix.writer.HBaseWriterPool;
+import org.archive.io.hbase.HBaseParameters;
+import org.archive.io.hbase.HBaseWriterPool;
 
 /**
  * The Class TestHBaseWriterPool.
@@ -34,7 +35,7 @@ public class TestHBaseWriterPool {
 	 */
 	@BeforeClass()
 	public void createHBaseWriterPool() {
-		hwp = new HBaseWriterPool(zkQuorum, zkClientPort, table, poolMaximumActive, poolMaximumWait);
+		hwp = new HBaseWriterPool(zkQuorum, zkClientPort, table, new HBaseParameters(), poolMaximumActive, poolMaximumWait);
 	}
 
 	/**
