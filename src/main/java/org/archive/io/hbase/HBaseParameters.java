@@ -41,7 +41,6 @@ import org.archive.io.ArchiveFileConstants;
  * @see org.archive.modules.writer.HBaseWriterProcessor
  *  {@link org.archive.modules.writer.HBaseWriterProcessor} for a full example
  *
- * @author greglu
  */
 public class HBaseParameters implements ArchiveFileConstants {
 

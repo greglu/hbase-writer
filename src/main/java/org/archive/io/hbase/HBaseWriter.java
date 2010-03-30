@@ -39,11 +39,9 @@ import org.archive.io.ReplayInputStream;
 import org.archive.io.WriterPoolMember;
 import org.archive.modules.CrawlURI;
 
-
 /**
  * HBase implementation.
  *
- * @contributor stack
  */
 public class HBaseWriter extends WriterPoolMember {
 
@@ -250,7 +248,7 @@ public class HBaseWriter extends WriterPoolMember {
         batchPut.add(Bytes.toBytes(getHbaseOptions().getCuriColumnFamily()), Bytes.toBytes(getHbaseOptions().getIpColumnName()), curi.getFetchBeginTime(), Bytes.toBytes(ip));
         // is the url part of the seed url (the initial url(s) used to start the crawl)
         if (curi.isSeed()) {
-            batchPut.add(Bytes.toBytes(getHbaseOptions().getCuriColumnFamily()), Bytes.toBytes(getHbaseOptions().getIsSeedColumnName()), Bytes.toBytes(Boolean.TRUE));
+            batchPut.add(Bytes.toBytes(getHbaseOptions().getCuriColumnFamily()), Bytes.toBytes(getHbaseOptions().getIsSeedColumnName()), Bytes.toBytes(Boolean.TRUE.booleanValue()));
             if (curi.getPathFromSeed() != null && curi.getPathFromSeed().trim().length() > 0) {
                 batchPut.add(Bytes.toBytes(getHbaseOptions().getCuriColumnFamily()), Bytes.toBytes(getHbaseOptions().getPathFromSeedColumnName()), Bytes.toBytes(curi.getPathFromSeed().trim()));
             }

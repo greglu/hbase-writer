@@ -39,7 +39,7 @@ public class TestHBaseWriterPool {
 	}
 
 	/**
-	 * Test h base writer pool integrity.
+	 * Test HBase writer pool integrity.
 	 */
 	@Test()
 	public void testHBaseWriterPoolIntegrity() {

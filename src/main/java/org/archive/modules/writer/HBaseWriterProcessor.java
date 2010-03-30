@@ -60,7 +60,6 @@ import org.archive.util.ArchiveUtils;
  * @see org.archive.io.hbase.HBaseParameters {@link org.archive.io.hbase.HBaseParameters}
  *  for defining hbaseParameters
  *
- * @author greg
  */
 public class HBaseWriterProcessor extends WriterPoolProcessor {
 

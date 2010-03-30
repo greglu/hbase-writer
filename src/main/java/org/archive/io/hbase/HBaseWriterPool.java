@@ -26,7 +26,7 @@ import org.archive.io.WriterPool;
 
 
 /**
- * @author stack
+ * 
  */
 public class HBaseWriterPool extends WriterPool {
 
