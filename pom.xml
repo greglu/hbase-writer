@@ -6,7 +6,7 @@
   <groupId>org.archive</groupId>
   <artifactId>hbase-writer</artifactId>
   <packaging>jar</packaging>
-  <version>0.9-SNAPSHOT</version>
+  <version>0.90.3</version>
   <name>HBase Writer</name>
   <description>A library for writing Heritrix3 output directly to an HBase table as records.</description>
   <url>http://code.google.com/p/hbase-writer</url>
@@ -229,20 +229,20 @@
 
     <dependency>
        <groupId>org.archive.heritrix</groupId>
-       <artifactId>commons</artifactId>
+       <artifactId>heritrix-commons</artifactId>
        <version>${heritrix.version}</version>
     </dependency>
     
     <dependency>
 	   <groupId>org.archive.heritrix</groupId>
-	   <artifactId>engine</artifactId>
+	   <artifactId>heritrix-engine</artifactId>
 	   <version>${heritrix.version}</version>
 	   <scope>runtime</scope>
     </dependency>
     
     <dependency>
 	   <groupId>org.archive.heritrix</groupId>
-	   <artifactId>modules</artifactId>
+	   <artifactId>heritrix-modules</artifactId>
 	   <version>${heritrix.version}</version>
     </dependency>
     
@@ -252,12 +252,13 @@
       <version>${fastutil.version}</version>
       <scope>runtime</scope>
     </dependency>
-    
+    <!-- 
     <dependency>
 	   <groupId>org.archive.overlays</groupId>
 	   <artifactId>archive-overlay-commons-pool</artifactId>
 	   <version>${overlay.commons-pool.version}</version>
     </dependency>
+     -->
 
     <dependency>
 	   <groupId>org.archive.overlays</groupId>
@@ -435,16 +436,16 @@
      <jdk.version>1.6</jdk.version>
      
      <!-- HBase dependencies -->
-     <hadoop.version>0.20.1</hadoop.version>
-     <hbase.version>0.20.3</hbase.version>
-     <zookeeper.version>3.2.2</zookeeper.version>
-     <!-- TODO: add log4j-1.2.15 to a maven repo -->
-     <log4j.version>1.2.15</log4j.version>
+     <hadoop.version>0.20.205.0</hadoop.version>
+     <hbase.version>0.90.3</hbase.version>
+     <zookeeper.version>3.3.2</zookeeper.version>
+     <log4j.version>1.2.16</log4j.version>
+     
      <!-- End of HBase dependencies -->
 
      <!-- Heritrix3 dependencies, check the heritrix lib/ folder if any are missing. -->
-     <springframework.version>2.5.6</springframework.version>
-     <heritrix.version>3.0.0-SNAPSHOT</heritrix.version>
+     <springframework.version>3.0.5.RELEASE</springframework.version>
+     <heritrix.version>3.1.0</heritrix.version>
      <fastutil.version>5.0.7</fastutil.version>
      <overlay.commons-pool.version>1.3</overlay.commons-pool.version>
      <overlay.commons-httpclient.version>3.1</overlay.commons-httpclient.version>

@@ -1,18 +1,28 @@
 HBase-Writer Change Log
 
-Current /trunk - Compatible with hadoop-0.19.0, hbase-0.19.0 & heritrix 2.0.1
+Current /trunk - Compatible with hadoop-core-0.20.205.0, hbase-0.90.3 & heritrix 3.1.0
+
+Release 0.90.3 - 16.11.2011
+  8th Release - Compatible with hadoop-core-0.20.205.0, hbase-0.90.3 & heritrix 3.1.0
+	1. HBaseWriterPool.java has been removed as it is no longer used, now using WARCWriterPool from Heritrix.
+	2. Added few more unimplemented methods in HBaseWriterProcessor to meet new Heritrix 3.1.0 interface WARCWriterPoolSettings
+	3. Removed deprecated methods used in configuring Hbase and changed the way of accessing Hbase Admin.
+	(Patch submitted by Karthik MV via Ryan Smith)
+	4. Improved logging and error handling by logging the entire error stack when an exception is thrown.
 
 Release 0.9-SNAPSAHOT - 29.03.2010
-
+  7th Release - Compatible with hadoop-core-0.19, hbase-0.20.0 & heritrix 2.0.1
 	(Patch submitted by Greg Lu via Ryan Smith)
 
 Release 0.20.3 - 24.10.2009
-
+  6th Release - Compatible with hadoop-0.18.2, hbase-0.18.1 & heritrix 2.0.1
 	(Patch submitted by Joost Ouwerkerk via Ryan Smith)
 
 Release 0.19.1 - 24.10.2009
+  5th Release - Compatible with hadoop-0.18.2, hbase-0.18.1 & heritrix 2.0.1
 
 Release 0.19.0 - 24.10.2009
+  4th Release - Compatible with hadoop-0.18.2, hbase-0.18.1 & heritrix 2.0.1
 
 Release 0.18.2 - 03.12.2008   
   3rd Release - Compatible with hadoop-0.18.2, hbase-0.18.1 & heritrix 2.0.1

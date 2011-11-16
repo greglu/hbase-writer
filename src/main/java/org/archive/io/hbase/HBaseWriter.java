@@ -22,6 +22,7 @@ package org.archive.io.hbase;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HConstants;
@@ -36,14 +37,13 @@ import org.apache.log4j.Logger;
 import org.archive.io.RecordingInputStream;
 import org.archive.io.RecordingOutputStream;
 import org.archive.io.ReplayInputStream;
-import org.archive.io.WriterPoolMember;
 import org.archive.modules.CrawlURI;
 
 /**
  * HBase implementation.
  *
  */
-public class HBaseWriter extends WriterPoolMember {
+public class HBaseWriter {
 
     private final Logger LOG = Logger.getLogger(this.getClass().getName());
 
@@ -67,7 +67,7 @@ public class HBaseWriter extends WriterPoolMember {
     }
 
     /**
-     * Instantiates a new HBaseWriter for the WriterPool to use in heritrix2.
+     * Instantiates a new HBaseWriter for the WriterPool to use in heritrix.
      * 
      * @param zkQuorum the zookeeper quorum. The list of hosts that make up you zookeeper quorum.
      * i.e.:  zkHost1,zkHost2,zkHost3
@@ -79,15 +79,13 @@ public class HBaseWriter extends WriterPoolMember {
      *
      * @throws IOException Signals that an I/O exception has occurred.
      */
-    public HBaseWriter(final String zkQuorum, final int zkClientPort, final String tableName, HBaseParameters parameters) throws IOException {
-        super(null, null, null, false, null);
-
+    public HBaseWriter(final String zkQuorum, final int zkClientPort, final String tableName, HBaseParameters parameters)  throws IOException{
         this.hbaseOptions = parameters;
 
         if (tableName == null || tableName.length() <= 0) {
             throw new IllegalArgumentException("Must specify a table name");
         }
-        HBaseConfiguration hbaseConfiguration = new HBaseConfiguration();
+        Configuration hbaseConfiguration = HBaseConfiguration.create();
 
         // set the zk quorum list
         if (zkQuorum != null && zkQuorum.length() > 0) {
@@ -114,7 +112,7 @@ public class HBaseWriter extends WriterPoolMember {
      * 
      * @throws IOException Signals that an I/O exception has occurred.
      */
-    protected void initializeCrawlTable(final HBaseConfiguration hbaseConfiguration, final String hbaseTableName) throws IOException {
+    protected void initializeCrawlTable(final Configuration hbaseConfiguration, final String hbaseTableName) throws IOException {
         // an HBase admin object to manage hbase tables.
         HBaseAdmin hbaseAdmin = new HBaseAdmin(hbaseConfiguration);
 
@@ -274,8 +272,9 @@ public class HBaseWriter extends WriterPoolMember {
             replayInputStream.setToResponseBodyStart();
             // process the content (optional)
             processContent(batchPut, replayInputStream, (int) recordingInputStream.getSize());
+            // TODO: add an option to manually set the timestamp value of the batchPut object
             // Set crawl time as the timestamp to the Put object.
-            batchPut.setTimeStamp(curi.getFetchBeginTime());
+            //batchPut.setTimeStamp(curi.getFetchBeginTime());
 
             // write the Put object to the HBase table
             getClient().put(batchPut);
@@ -283,11 +282,4 @@ public class HBaseWriter extends WriterPoolMember {
             IOUtils.closeStream(replayInputStream);
         }
     }
-
-    @Override
-    public void close() throws IOException {
-        this.client.close();
-        super.close();
-    }
-
 }

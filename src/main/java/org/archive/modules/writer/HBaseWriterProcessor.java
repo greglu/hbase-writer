@@ -2,7 +2,6 @@ package org.archive.modules.writer;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -16,9 +15,12 @@ import org.archive.io.ReplayInputStream;
 import org.archive.io.WriterPoolMember;
 import org.archive.io.hbase.HBaseParameters;
 import org.archive.io.hbase.HBaseWriter;
-import org.archive.io.hbase.HBaseWriterPool;
+import org.archive.io.warc.WARCWriterPool;
+import org.archive.io.warc.WARCWriterPoolSettings;
 import org.archive.modules.CrawlURI;
 import org.archive.modules.ProcessResult;
+import org.archive.spring.ConfigPath;
+import org.archive.uid.RecordIDGenerator;
 import org.archive.util.ArchiveUtils;
 
 
@@ -41,7 +43,7 @@ import org.archive.util.ArchiveUtils;
  *   <property name="zkClientPort" value="2181" />
  *   <property name="hbaseTable" value="crawl" />
  *   <property name="hbaseParameters">
- *     <bean ref="hbaseParameterSettings" />
+ *     <ref bean="hbaseParameterSettings" />
  *   </property>
  * </bean>
  *
@@ -61,9 +63,9 @@ import org.archive.util.ArchiveUtils;
  *  for defining hbaseParameters
  *
  */
-public class HBaseWriterProcessor extends WriterPoolProcessor {
+public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWriterPoolSettings {
 
-    private final Logger LOG = Logger.getLogger(this.getClass().getName());
+    private static final Logger log = Logger.getLogger(HBaseWriterProcessor.class);
 
     private static final long serialVersionUID = 7019522841438703184L;
 
@@ -104,7 +106,7 @@ public class HBaseWriterProcessor extends WriterPoolProcessor {
         return zkQuorum;
     }
     public void setZkQuorum(String zkQuorum) {
-        LOG.info("ZkQuorum: " + zkQuorum);
+        log.info("ZkQuorum: " + zkQuorum);
         this.zkQuorum = zkQuorum;
     }
 
@@ -112,7 +114,7 @@ public class HBaseWriterProcessor extends WriterPoolProcessor {
         return zkClientPort;
     }
     public void setZkClientPort(int zkClientPort) {
-        LOG.info("ZkClientPort: " + zkClientPort);
+        log.info("ZkClientPort: " + zkClientPort);
         this.zkClientPort = zkClientPort;
     }
 
@@ -120,7 +122,7 @@ public class HBaseWriterProcessor extends WriterPoolProcessor {
         return hbaseTable;
     }
     public void setHbaseTable(String hbaseTable) {
-        LOG.info("HBaseTable: " + hbaseTable);
+        log.info("HBaseTable: " + hbaseTable);
         this.hbaseTable = hbaseTable;
     }
 
@@ -155,19 +157,10 @@ public class HBaseWriterProcessor extends WriterPoolProcessor {
         return (20 * 1024 * 1024);
     }
 
-    @Override
-    List<String> getDefaultStorePaths() {
-        return new ArrayList<String>();
-    }
-
-    @Override
-    protected List<String> getMetadata() {
-        return new ArrayList<String>();
-    }
-
+    
     @Override
     protected void setupPool(AtomicInteger serial) {
-        setPool(new HBaseWriterPool(getZkQuorum(), getZkClientPort(), getHbaseTable(), getHbaseParameters(), getPoolMaxActive(), getPoolMaxWaitMs()));
+        setPool(new WARCWriterPool(serial, this, getPoolMaxActive(), getMaxWaitForIdleMs()));
     }
 
     @Override
@@ -180,10 +173,10 @@ public class HBaseWriterProcessor extends WriterPoolProcessor {
                 ris = curi.getRecorder().getRecordedInput().getReplayInputStream();
                 return write(curi, recordLength, ris);
             }
-            LOG.info("Does not write " + curi.toString());
+            log.info("Does not write " + curi.toString());
         } catch (IOException e) {
             curi.getNonFatalFailures().add(e);
-            LOG.error("Failed write of Record: " + curi.toString(), e);
+            log.error("Failed write of Record: " + curi.toString(), e);
         } finally {
             ArchiveUtils.closeQuietly(ris);
         }
@@ -203,7 +196,11 @@ public class HBaseWriterProcessor extends WriterPoolProcessor {
         // If onlyProcessNewRecords is enabled and the given rowkey has cell data,
         // don't write the record.
         if (onlyProcessNewRecords()) {
-            return isRecordNew(curi);
+            try {
+				return isRecordNew(curi);
+			} catch (IOException e) {
+				log.error("Failed write of Record: " + curi.toString(), e);
+			}
         }
 
         // If we make it here, then we passed all our checks and we can assume
@@ -219,6 +216,7 @@ public class HBaseWriterProcessor extends WriterPoolProcessor {
      *
      * @return true if URI should be written; false otherwise
      */
+    @Override
     protected boolean shouldWrite(CrawlURI curi) {
         // The old method is still checked, but only continue with the next
         // checks if it returns true.
@@ -229,7 +227,7 @@ public class HBaseWriterProcessor extends WriterPoolProcessor {
         if (curi.getContentSize() > getMaxFileSizeBytes()) {
             // content size is too large
             curi.getAnnotations().add(ANNOTATION_UNWRITTEN + ":size");
-            LOG.warn("Content size for " + curi.getUURI() + " is too large ("
+            log.warn("Content size for " + curi.getUURI() + " is too large ("
                     + curi.getContentSize() + ") - maximum content size is: "
                     + getMaxFileSizeBytes());
             return false;
@@ -238,9 +236,12 @@ public class HBaseWriterProcessor extends WriterPoolProcessor {
         // If onlyWriteNewRecords is enabled and the given rowkey has cell data,
         // don't write the record.
         if (onlyWriteNewRecords()) {
-            return isRecordNew(curi);
+            try {
+				return isRecordNew(curi);
+			} catch (IOException e) {
+				log.error("Failed to write a new record for rowKey: " + curi.toString() + " using pool: " + getPool().toString(), e);
+			}
         }
-
         // all tests pass, return true to write the content locally.
         return true;
     }
@@ -251,18 +252,18 @@ public class HBaseWriterProcessor extends WriterPoolProcessor {
      * @param curi the curi
      *
      * @return true, if checks if is record new
+     * @throws IOException 
      */
-    private boolean isRecordNew(CrawlURI curi) {
+    private boolean isRecordNew(CrawlURI curi) throws IOException {
         WriterPoolMember writerPoolMember;
         try {
             writerPoolMember = getPool().borrowFile();
         } catch (IOException e1) {
-            LOG.error("No writer could be borrowed from the pool: " + getPool().toString() 
-                            + " - exception is: \n" + e1.getMessage());
+            log.error("No writer could be borrowed from the pool: " + getPool().toString(), e1);
             return false;
         }
-
-        HTable hbaseTable = ((HBaseWriter) writerPoolMember).getClient();
+        HBaseWriter baseWriter = new HBaseWriter(zkQuorum, zkClientPort, hbaseTable, hbaseParameters);
+        HTable hbaseTable = baseWriter.getClient();
         // Here we can generate the rowkey for this uri ...
         String url = curi.toString();
         String row = Keying.createKey(url);
@@ -270,8 +271,8 @@ public class HBaseWriterProcessor extends WriterPoolProcessor {
             // and look it up to see if it already exists...
             Get rowToGet = new Get(Bytes.toBytes(row));
             if (hbaseTable.get(rowToGet) != null && !hbaseTable.get(rowToGet).isEmpty()) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Not A NEW Record - Url: "
+                if (log.isDebugEnabled()) {
+                    log.debug("Not A NEW Record - Url: "
                                 + url
                                 + " has the existing rowkey: "
                                 + row
@@ -280,17 +281,16 @@ public class HBaseWriterProcessor extends WriterPoolProcessor {
                 return false;
             }
         } catch (IOException e) {
-            LOG.error("Failed to determine if record: "
+            log.error("Failed to determine if record: "
                             + row
                             + " is a new record due to IOExecption.  Deciding the record is already existing for now. \n"
-                            + e.getMessage());
+                            , e);
             return false;
         } finally {
             try {
                 getPool().returnFile(writerPoolMember);
             } catch (IOException e) {
-                LOG.error("Failed to add back writer to the pool after checking if a rowkey is new or existing: "
-                                + row + "\n" + e.getMessage());
+                log.error("Failed to add back writer to the pool after checking if a rowkey is new or existing: ", e);
                 return false;
             }
         }
@@ -311,7 +311,7 @@ public class HBaseWriterProcessor extends WriterPoolProcessor {
     protected ProcessResult write(final CrawlURI curi, long recordLength, InputStream in) throws IOException {
         WriterPoolMember writerPoolMember = getPool().borrowFile();
         long writerPoolMemberPosition = writerPoolMember.getPosition();
-        HBaseWriter hbaseWriter = (HBaseWriter) writerPoolMember;
+        HBaseWriter hbaseWriter = new HBaseWriter(zkQuorum, zkClientPort, hbaseTable, hbaseParameters);
         try {
             hbaseWriter.write(curi, getHostAddress(curi), curi.getRecorder().getRecordedOutput(), curi.getRecorder().getRecordedInput());
         } finally {
@@ -320,5 +320,20 @@ public class HBaseWriterProcessor extends WriterPoolProcessor {
         }
         return checkBytesWritten();
     }
+	
+	List<ConfigPath> getDefaultStorePaths() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public List<String> getMetadata() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public RecordIDGenerator getRecordIDGenerator() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

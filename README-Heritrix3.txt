@@ -36,7 +36,7 @@ This facilitates running high-speed, distributed computations over content crawl
 
 1. Start an instance of hbase.
 
-2. Install heritrix-3.0.x
+2. Install heritrix-3.x.x
 
 3. Copy the following jar files into the ${HERITRIX_HOME}/lib directory:
 
@@ -71,7 +71,7 @@ Add the following beans to the disposition chain of your job configuration:
 	<property name="onlyProcessNewRecords" value="false" />
 	<property name="onlyWriteNewRecords" value="false" />
 	<property name="hbaseParameters">
-		<bean ref="hbaseParameterSettings" />
+		<ref bean="hbaseParameterSettings"/> 
 	</property>
 </bean>
 
@@ -157,7 +157,7 @@ For example:
   cp ${HOME}/.m2/repository/org/apache/hadoop/hbase/0.20.1/hbase-0.20.1.jar ${HERITRIX_HOME}/lib/
   cp ${HOME}/.m2/repository/org/apache/hadoop/zookeeper/3.2.1/zookeeper-3.2.1.jar ${HERITRIX_HOME}/lib/
   cp ${HOME}/.m2/repository/org/apache/hadoop/hadoop-core/0.20.1/hadoop-core-0.20.1.jar ${HERITRIX_HOME}/lib/ 
-  cp ${HOME}/.m2/repository/log4j/log4j/1.2.15/log4j-1.2.15.jar ${HERITRIX_HOME}/lib/
+  cp ${HOME}/.m2/repository/log4j/log4j/1.2.16/log4j-1.2.16.jar ${HERITRIX_HOME}/lib/
   
 = UPGRADING TO NEW HADOOP/HBASE/HERITRIX VERSIONS =
 
@@ -170,10 +170,10 @@ A sample settings.xml file:
 	<profile>
 	  <id>myBuild</id>
 	  <properties>
-            <heritrix.version>2.0.2</heritrix.version>
-            <hbase.version>0.20.1</hbase.version>
-            <hadoop.version>0.20.1</hadoop.version>
-            <zookeeper.version>3.2.1</zookeeper.version>
+            <heritrix.version>3.1.0</heritrix.version>
+            <hbase.version>0.90.3</hbase.version>
+            <hadoop.version>0.20.205.0</hadoop.version>
+            <zookeeper.version>3.3.2</zookeeper.version>
 	  </properties>
 	</profile>
   </profiles>
@@ -181,6 +181,10 @@ A sample settings.xml file:
   
 Place this file in your ${HOME}/.m2/ directory and run the maven build command:
  mvn clean package -PmyBuild
+
+= CONTRIBUTING SOURCE =
+If you would like to contribute a patch to help improve the source code, please feel free to create an Issue in the Issues section on the project website.  
+Just attach your patch to the issue and a committer will merge the changes as soon as possible.  Thank you.
  
 = BUILDING THE SITE REPORT =
 
@@ -188,5 +192,5 @@ Place this file in your ${HOME}/.m2/ directory and run the maven build command:
 
 = PING BACK =
 
-Thanks to the OpenSource community for all the support for releasing this project.
+Thanks to the Open Source community for all the support for releasing this project.
 	

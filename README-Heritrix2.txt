@@ -36,7 +36,7 @@ This facilitates running high-speed, distributed computations over content crawl
 
 1. Start an instance of hbase.
 
-2. Install heritrix-2.0.x
+2. Install heritrix-2.x.x
 
 3. Copy the following jar files into the ${HERITRIX_HOME}/lib directory:
 
