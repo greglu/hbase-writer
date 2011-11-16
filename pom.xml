@@ -6,7 +6,7 @@
   <groupId>org.archive</groupId>
   <artifactId>hbase-writer</artifactId>
   <packaging>jar</packaging>
-  <version>0.90.3</version>
+  <version>0.90.4-SNAPSHOT</version>
   <name>HBase Writer</name>
   <description>A library for writing Heritrix3 output directly to an HBase table as records.</description>
   <url>http://code.google.com/p/hbase-writer</url>
