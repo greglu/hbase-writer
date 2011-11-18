@@ -585,21 +585,23 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
      */
     HBaseParameters hbaseParameters = null;
 
-    /** If set to true, then only write urls that are new rowkey records. 
-     *  Default is false, which will write all urls to the HBase table. 
+    /** 
+     * Default is false, which will write all urls to the HBase table.
+     * If set to true, then only write urls that are new rowkey records. 
      * Heritrix is good about not hitting the same url twice, so this feature 
      * is to ensure that you can run multiple sessions of the same crawl 
      * configuration and not write the same url more than once to the same 
      * hbase table. You may just want to crawl a site to see what new urls have 
      * been added over time, or continue where you left off on a terminated 
-     * crawl.  Heritrix itself does support this functionalty by supporting 
-     * "Checkpoints" during a crawl session, so this may not be a necessary 
-     * option.
+     * crawl.  Heritrix itself does support this functionality by supporting 
+     * Heritrix checkpoints during a crawl session, so this options may not be a necessary 
+     * option if checkpoints work for you.
      */
     private boolean onlyWriteNewRecords = false;
 
-    /** If set to true, then only process urls that are new rowkey records. 
-     * Default is false, which will process all urls to the HBase table. 
+    /** 
+     * Default is false, which will process all urls in the HBase table.
+     * If set to true, then HBase-Writer will only process urls that are new rowkey records in the table. 
      * In this mode, Heritrix wont even fetch and parse the content served at 
      * the url if it already exists as a rowkey in the HBase table. 
      */
@@ -788,15 +790,15 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
             }
         } catch (IOException e) {
             log.error("Failed to determine if record: "
-                            + row
-                            + " is a new record due to IOExecption.  Deciding the record is already existing for now. \n"
+                            + row + " is a new record due to IOExecption.  Deciding the record is already existing for now."
                             , e);
             return false;
         } finally {
             try {
                 getPool().returnFile(writerPoolMember);
             } catch (IOException e) {
-                log.error("Failed to add back writer to the pool after checking if a rowkey is new or existing: ", e);
+                log.error("Failed to add back writer to the pool after checking if a rowkey is new or existing , writerPoolMember: " 
+                		+ writerPoolMember, e);
                 return false;
             }
         }
