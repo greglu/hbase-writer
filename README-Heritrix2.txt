@@ -1,7 +1,7 @@
 Welcome to HBase-Writer README for Heritrix 2.  
 
 This document can also be found online here:
-http://code.google.com/p/hbase-writer/wiki/README-Heritrix2
+http://code.google.com/p/hbase-writer/wiki/READMEHeritrix2
 
 Specific versions of HBase-Writer now support different
 version combinations of Heritrix and HBase. Please refer to
@@ -11,6 +11,7 @@ for a more detailed list.
 Before reading this document, please make sure the
 HBase-Writer version you downloaded is meant to work with
 Heritrix 2.
+
 
 
 = TABLE OF CONTENTS = 
@@ -83,52 +84,3 @@ process-only-new-records
   By setting this to "true" you ensure that only new urls(rowkeys) are processed by heritrix.  Also, if set to "true", 
   heritrix doesnt download any content that is already existing as a record in the hbase table. 
 
-COMPILING THE SOURCE
-====================
-  mvn clean compile
-
-BUILDING THE JAR
-=====================
-  mvn clean package
-
-The hbase-writer-x.x.x.jar should be in the target/ directory.  
-You can get the hadoop, hbase and log4j dependency jars from your ${HOME}/.m2/repository/ directory.
-For example:
-  cp ${HOME}/.m2/repository/org/apache/hadoop/hbase/0.20.1/hbase-0.20.1.jar ${HERITRIX_HOME}/lib/
-  cp ${HOME}/.m2/repository/org/apache/hadoop/zookeeper/3.2.1/zookeeper-3.2.1.jar ${HERITRIX_HOME}/lib/
-  cp ${HOME}/.m2/repository/org/apache/hadoop/hadoop-core/0.20.1/hadoop-core-0.20.1.jar ${HERITRIX_HOME}/lib/ 
-  cp ${HOME}/.m2/repository/log4j/log4j/1.2.15/log4j-1.2.15.jar ${HERITRIX_HOME}/lib/
-  
-UPGRADING TO NEW HADOOP/HBASE/HERITRIX VERSIONS
-================================================
-To build hbase-writer with new versions of hadoop, hbase or heritrix (or any of the dependencies), use a ${HOME}/.m2/settings.xml file.
-
-A sample settings.xml file:
- <?xml version="1.0" encoding="UTF-8"?>
- <settings>
-  <profiles>
-	<profile>
-	  <id>myBuild</id>
-	  <properties>
-            <heritrix.version>2.0.2</heritrix.version>
-            <hbase.version>0.20.1</hbase.version>
-            <hadoop.version>0.20.1</hadoop.version>
-            <zookeeper.version>3.2.1</zookeeper.version>
-	  </properties>
-	</profile>
-  </profiles>
- </settings> 
-  
-Place this file in your ${HOME}/.m2/ directory and run the maven build command:
- mvn clean package -PmyBuild
- 
-BUILDING THE SITE REPORT
-========================
-  mvn clean site
-
-PING BACK
-========================
-Thanks to Questio for all the support for releasing this project.
-2.0.x of Heritrix and version 0.20.x of Hadoop & HBase.  Newer versions of HBase, Hadoop
-and Heritrix may continue to work with this connector as long as the pertinent
-APIs have not changed.  Just replace the jar files with the newer versions.

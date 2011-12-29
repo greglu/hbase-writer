@@ -1,7 +1,7 @@
 Welcome to HBase-Writer README for Heritrix 3.  
 
 This document can also be found online here:
-http://code.google.com/p/hbase-writer/wiki/README-Heritrix3
+http://code.google.com/p/hbase-writer/wiki/READMEHeritrix3
 
 Specific versions of HBase-Writer now support different
 version combinations of Heritrix and HBase. Please refer to
@@ -13,8 +13,8 @@ HBase-Writer version you downloaded is meant to work with
 Heritrix 3.
 
 
-TABLE OF CONTENTS
-=================
+= TABLE OF CONTENTS =
+
 * SETUP
 * CONFIGURING HERITRIX
 * FILE FORMAT
@@ -32,28 +32,33 @@ Having the crawled data in hbase tables is directly supported by the Map/Reduce 
 This facilitates running high-speed, distributed computations over content crawled with Heritrix.
 
 
-QUICK SETUP
-===========
+= QUICK SETUP =
 
 1. Start an instance of hbase.
-2. Install heritrix-3.0.x
+
+2. Install heritrix-3.x.x
+
 3. Copy the following jar files into the ${HERITRIX_HOME}/lib directory:
 
   hbase-writer-x.x.x.jar
+  
   hbase-x.x.x.jar
+  
   zookeeper-x.x.x.jar
+  
   hadoop-x.x.x-core.jar
+  
   log4j-x.x.x.jar
 
 4. Start Heritrix
 
 
-CONFIGURING HERITRIX
-====================
+= CONFIGURING HERITRIX =
 
 Add the following beans to the disposition chain of your job configuration:
 
 ---
+{{{
 <!-- DISPOSITION CHAIN -->
 <bean id="hbaseParameterSettings" class="org.archive.io.hbase.HBaseParameters">
 	<property name="contentColumnFamily" value="newcontent" />
@@ -67,7 +72,7 @@ Add the following beans to the disposition chain of your job configuration:
 	<property name="onlyProcessNewRecords" value="false" />
 	<property name="onlyWriteNewRecords" value="false" />
 	<property name="hbaseParameters">
-		<bean ref="hbaseParameterSettings" />
+		<ref bean="hbaseParameterSettings"/> 
 	</property>
 </bean>
 
@@ -80,6 +85,7 @@ Add the following beans to the disposition chain of your job configuration:
 	</list>
 	</property>
 </bean>
+}}}
 ---
 
 With the following configurable properties:
@@ -139,49 +145,5 @@ org.archive.io.hbase.HBaseParameters properties:
 	  The column qualifier name for storing the request. Defaults to "request" which becomes "curi:request".
 
 
-COMPILING THE SOURCE
-====================
-  mvn clean compile
 
-BUILDING THE JAR
-=====================
-  mvn clean package
-
-The hbase-writer-x.x.x.jar should be in the target/ directory.  
-You can get the hadoop, hbase and log4j dependency jars from your ${HOME}/.m2/repository/ directory.
-For example:
-  cp ${HOME}/.m2/repository/org/apache/hadoop/hbase/0.20.1/hbase-0.20.1.jar ${HERITRIX_HOME}/lib/
-  cp ${HOME}/.m2/repository/org/apache/hadoop/zookeeper/3.2.1/zookeeper-3.2.1.jar ${HERITRIX_HOME}/lib/
-  cp ${HOME}/.m2/repository/org/apache/hadoop/hadoop-core/0.20.1/hadoop-core-0.20.1.jar ${HERITRIX_HOME}/lib/ 
-  cp ${HOME}/.m2/repository/log4j/log4j/1.2.15/log4j-1.2.15.jar ${HERITRIX_HOME}/lib/
-  
-UPGRADING TO NEW HADOOP/HBASE/HERITRIX VERSIONS
-================================================
-To build hbase-writer with new versions of hadoop, hbase or heritrix (or any of the dependencies), use a ${HOME}/.m2/settings.xml file.
-
-A sample settings.xml file:
- <?xml version="1.0" encoding="UTF-8"?>
- <settings>
-  <profiles>
-	<profile>
-	  <id>myBuild</id>
-	  <properties>
-            <heritrix.version>2.0.2</heritrix.version>
-            <hbase.version>0.20.1</hbase.version>
-            <hadoop.version>0.20.1</hadoop.version>
-            <zookeeper.version>3.2.1</zookeeper.version>
-	  </properties>
-	</profile>
-  </profiles>
- </settings> 
-  
-Place this file in your ${HOME}/.m2/ directory and run the maven build command:
- mvn clean package -PmyBuild
- 
-BUILDING THE SITE REPORT
-========================
-  mvn clean site
-
-PING BACK
-========================
-Thanks to Questio for all the support for releasing this project.
+	
