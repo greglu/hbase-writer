@@ -727,8 +727,11 @@ public class HBaseWriter implements Serializer {
 
         // create an hbase updateable object (the put object)
         // Constructor takes the rowkey as the only argument
-        byte[] key = getHbaseOptions().isMd5Key() ? DigestUtils.md5(rowKey) : Bytes.toBytes(rowKey);
-        Put batchPut = new Put(key);
+        if (getHbaseOptions().isMd5Key()) {
+        	rowKey = DigestUtils.md5Hex(rowKey);
+        }
+
+        Put batchPut = new Put(Bytes.toBytes(rowKey));
 
         // write the target url to the url column
         batchPut.add(Bytes.toBytes(getHbaseOptions().getCuriColumnFamily()),
