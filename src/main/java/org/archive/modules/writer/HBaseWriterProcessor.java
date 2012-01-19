@@ -516,13 +516,10 @@ import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.Keying;
 import org.apache.log4j.Logger;
-import org.archive.modules.writer.WriterPoolProcessor;
 import org.archive.io.ReplayInputStream;
-import org.archive.io.WriterPoolMember;
 import org.archive.io.hbase.HBaseParameters;
 import org.archive.io.hbase.HBaseWriter;
 import org.archive.io.hbase.HBaseWriterPool;
-import org.archive.io.warc.WARCWriterPool;
 import org.archive.io.warc.WARCWriterPoolSettings;
 import org.archive.modules.CrawlURI;
 import org.archive.modules.ProcessResult;
@@ -574,66 +571,13 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
 
     private static final Logger log = Logger.getLogger(HBaseWriterProcessor.class);
 
-    private static final long serialVersionUID = 7019522841438703184L;
-
-    /** HBase specific attributes **/
-    private String zkQuorum;            // shouldn't be defaulted
-    private int zkClientPort = 2181;    // Default port for ZK
-    private String hbaseTable;          // shouldn't be defaulted
+    @SuppressWarnings("unused")
+	private static final long serialVersionUID = 7019522841438703184L;
 
     /**
      * @see org.archive.io.hbase.HBaseParameters
      */
     HBaseParameters hbaseParameters = null;
-
-    /** 
-     * Default is false, which will write all urls to the HBase table.
-     * If set to true, then only write urls that are new rowkey records. 
-     * Heritrix is good about not hitting the same url twice, so this feature 
-     * is to ensure that you can run multiple sessions of the same crawl 
-     * configuration and not write the same url more than once to the same 
-     * hbase table. You may just want to crawl a site to see what new urls have 
-     * been added over time, or continue where you left off on a terminated 
-     * crawl.  Heritrix itself does support this functionality by supporting 
-     * Heritrix checkpoints during a crawl session, so this options may not be a necessary 
-     * option if checkpoints work for you.
-     */
-    private boolean onlyWriteNewRecords = false;
-
-    /** 
-     * Default is false, which will process all urls in the HBase table.
-     * If set to true, then HBase-Writer will only process urls that are new rowkey records in the table. 
-     * In this mode, Heritrix wont even fetch and parse the content served at 
-     * the url if it already exists as a rowkey in the HBase table. 
-     */
-    private boolean onlyProcessNewRecords = false;
-
-    
-    /** Getters and setters **/
-
-    public String getZkQuorum() {
-        return zkQuorum;
-    }
-    public void setZkQuorum(String zkQuorum) {
-        log.info("ZkQuorum: " + zkQuorum);
-        this.zkQuorum = zkQuorum;
-    }
-
-    public int getZkClientPort() {
-        return zkClientPort;
-    }
-    public void setZkClientPort(int zkClientPort) {
-        log.info("ZkClientPort: " + zkClientPort);
-        this.zkClientPort = zkClientPort;
-    }
-
-    public String getHbaseTable() {
-        return hbaseTable;
-    }
-    public void setHbaseTable(String hbaseTable) {
-        log.info("HBaseTable: " + hbaseTable);
-        this.hbaseTable = hbaseTable;
-    }
 
     public synchronized HBaseParameters getHbaseParameters() {
         if (hbaseParameters == null)
@@ -645,32 +589,15 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
         this.hbaseParameters = options;
     }
 
-    public boolean onlyWriteNewRecords() {
-        return onlyWriteNewRecords;
-    }
-    public void setOnlyWriteNewRecords(boolean onlyWriteNewRecords) {
-        this.onlyWriteNewRecords = onlyWriteNewRecords;
-    }
-
-    public boolean onlyProcessNewRecords() {
-        return onlyProcessNewRecords;
-    }
-    public void setOnlyProcessNewRecords(boolean onlyProcessNewRecords) {
-        this.onlyProcessNewRecords = onlyProcessNewRecords;
-    }
-
-    /** End of Getters and Setters **/
 
     @Override
     long getDefaultMaxFileSize() {
         return (20 * 1024 * 1024);
     }
-
     
     @Override
     protected void setupPool(AtomicInteger serial) {
-    	setPool(new HBaseWriterPool(serial, this, getPoolMaxActive(), getMaxWaitForIdleMs(),
-    			zkQuorum, zkClientPort, hbaseTable, hbaseParameters));
+    	setPool(new HBaseWriterPool(serial, this, getPoolMaxActive(), getMaxWaitForIdleMs(), hbaseParameters));
     }
 
     @Override
@@ -705,7 +632,7 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
 
         // If onlyProcessNewRecords is enabled and the given rowkey has cell data,
         // don't write the record.
-        if (onlyProcessNewRecords()) {
+        if (hbaseParameters.onlyProcessNewRecords()) {
             try {
 				return isRecordNew(curi);
 			} catch (IOException e) {
@@ -745,7 +672,7 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
 
         // If onlyWriteNewRecords is enabled and the given rowkey has cell data,
         // don't write the record.
-        if (onlyWriteNewRecords()) {
+        if (hbaseParameters.onlyWriteNewRecords()) {
             try {
 				return isRecordNew(curi);
 			} catch (IOException e) {
@@ -824,17 +751,14 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
     }
 
     List<ConfigPath> getDefaultStorePaths() {
-		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 	public List<String> getMetadata() {
-		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 	public RecordIDGenerator getRecordIDGenerator() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

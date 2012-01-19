@@ -508,6 +508,8 @@ package org.archive.io.hbase;
 
 import org.archive.io.ArchiveFileConstants;
 
+import com.google.common.base.Preconditions;
+
 /**
  * Configures the values of the column family/qualifier used
  * for the crawl. Also contains a full set of default values that
@@ -532,6 +534,8 @@ import org.archive.io.ArchiveFileConstants;
 public class HBaseParameters implements ArchiveFileConstants {
 
     /** DEFAULT OPTIONS **/
+	public static final int ZK_CLIENT_PORT = 2181;
+
     // "content" column family and qualifiers
     public static final String CONTENT_COLUMN_FAMILY = "content";
     public static final String CONTENT_COLUMN_NAME = "raw_data";
@@ -550,6 +554,10 @@ public class HBaseParameters implements ArchiveFileConstants {
 
 
     /** ACTUAL OPTIONS INITIALIZED TO DEFAULTS **/
+    private String zkQuorum = null;
+    private int zkPort = ZK_CLIENT_PORT;
+    private String hbaseTableName = null;
+
     private String contentColumnFamily = CONTENT_COLUMN_FAMILY;
     private String contentColumnName = CONTENT_COLUMN_NAME;
 
@@ -564,6 +572,52 @@ public class HBaseParameters implements ArchiveFileConstants {
     private boolean md5Key = false;
     private Serializer serializer = null;
 
+    /**
+     * Default is false, which will write all urls to the HBase table.
+     * If set to true, then only write urls that are new rowkey records.
+     * Heritrix is good about not hitting the same url twice, so this feature
+     * is to ensure that you can run multiple sessions of the same crawl
+     * configuration and not write the same url more than once to the same
+     * hbase table. You may just want to crawl a site to see what new urls have
+     * been added over time, or continue where you left off on a terminated
+     * crawl.  Heritrix itself does support this functionality by supporting
+     * Heritrix checkpoints during a crawl session, so this options may not be a necessary
+     * option if checkpoints work for you.
+     */
+    private boolean onlyWriteNewRecords = false;
+
+    /**
+     * Default is false, which will process all urls in the HBase table.
+     * If set to true, then HBase-Writer will only process urls that are new rowkey records in the table.
+     * In this mode, Heritrix wont even fetch and parse the content served at
+     * the url if it already exists as a rowkey in the HBase table.
+     */
+    private boolean onlyProcessNewRecords = false;
+
+
+
+    public String getZkQuorum() {
+    	Preconditions.checkState(zkQuorum != null && !zkQuorum.isEmpty(),
+    			getClass().getName() + " instances need zkQuorum parameter set before accessing");
+    	return zkQuorum;
+    }
+    public void setZkQuorum(String quorum) {
+    	zkQuorum = quorum;
+    }
+    public int getZkPort() {
+    	return zkPort;
+    }
+    public void setZkPort(int port) {
+    	zkPort = port;
+    }
+    public String getHbaseTableName() {
+    	Preconditions.checkState(hbaseTableName != null && !hbaseTableName.isEmpty(),
+    			getClass().getName() + " instances need hbaseTableName parameter set before accessing");
+    	return hbaseTableName;
+    }
+    public void setHbaseTableName(String tableName) {
+    	hbaseTableName = tableName;
+    }
     public String getContentColumnFamily() {
         return contentColumnFamily;
     }
@@ -618,7 +672,7 @@ public class HBaseParameters implements ArchiveFileConstants {
     public void setRequestColumnName(String requestColumnName) {
         this.requestColumnName = requestColumnName;
     }
-    public String getZookeeperClientPort() {
+    public String getZookeeperClientPortKey() {
         return ZOOKEEPER_CLIENT_PORT;
     }
 	public Serializer getSerializer() {
@@ -633,4 +687,16 @@ public class HBaseParameters implements ArchiveFileConstants {
 	public void setMd5Key(boolean md5Key) {
 		this.md5Key = md5Key;
 	}
+    public boolean onlyWriteNewRecords() {
+        return onlyWriteNewRecords;
+    }
+    public void setOnlyWriteNewRecords(boolean onlyWriteNewRecords) {
+        this.onlyWriteNewRecords = onlyWriteNewRecords;
+    }
+    public boolean onlyProcessNewRecords() {
+        return onlyProcessNewRecords;
+    }
+    public void setOnlyProcessNewRecords(boolean onlyProcessNewRecords) {
+        this.onlyProcessNewRecords = onlyProcessNewRecords;
+    }
 }

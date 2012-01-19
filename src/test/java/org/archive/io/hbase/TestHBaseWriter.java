@@ -547,16 +547,16 @@ public class TestHBaseWriter {
 	public void testCreateHBaseWriter() throws IOException {
 		// Test
 		try {
-			hw = new HBaseWriter(new AtomicInteger(), null, zkQuorum, zkClientPort, "", null);
+			hw = new HBaseWriter(new AtomicInteger(), null, null);
 			Assert.assertNull(hw);
 		} catch (IllegalArgumentException e) {
 			Assert.assertNotNull(e);
 		}
 
 		try {
-			hw = new HBaseWriter(new AtomicInteger(), null, zkQuorum, zkClientPort, null, new HBaseParameters());
+			hw = new HBaseWriter(new AtomicInteger(), null, new HBaseParameters());
 			Assert.assertNull(hw);
-		} catch (IllegalArgumentException e) {
+		} catch (IllegalStateException e) {
 			Assert.assertNotNull(e);
 		}
 

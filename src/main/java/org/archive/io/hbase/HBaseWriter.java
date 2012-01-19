@@ -530,6 +530,8 @@ import org.archive.io.WriterPoolMember;
 import org.archive.io.WriterPoolSettings;
 import org.archive.modules.CrawlURI;
 
+import com.google.common.base.Preconditions;
+
 /**
  * HBase implementation.
  *
@@ -571,32 +573,26 @@ public class HBaseWriter extends WriterPoolMember implements Serializer {
      * @throws IOException Signals that an I/O exception has occurred.
      */
     public HBaseWriter(AtomicInteger serialNo, final WriterPoolSettings settings,
-    		final String zkQuorum, final int zkClientPort, final String tableName, HBaseParameters parameters) throws IOException{
+    		HBaseParameters parameters) throws IOException {
 
     	super(serialNo, settings, null);
 
+    	Preconditions.checkArgument(parameters != null);
         this.hbaseOptions = parameters;
 
-        if (tableName == null || tableName.length() <= 0) {
-            throw new IllegalArgumentException("Must specify a table name");
-        }
         Configuration hbaseConfiguration = HBaseConfiguration.create();
 
         // set the zk quorum list
-        if (zkQuorum != null && zkQuorum.length() > 0) {
-            LOG.info("setting zookeeper quorum to : " + zkQuorum);
-            hbaseConfiguration.setStrings(HConstants.ZOOKEEPER_QUORUM, zkQuorum.split(","));
-        }
+        LOG.info("setting zookeeper quorum to : " + hbaseOptions.getZkQuorum());
+        hbaseConfiguration.setStrings(HConstants.ZOOKEEPER_QUORUM, hbaseOptions.getZkQuorum().split(","));
 
         // set the client port
-        if (zkClientPort > 0) {
-            LOG.info("setting zookeeper client Port to : " + zkClientPort);
-            hbaseConfiguration.setInt(getHbaseOptions().getZookeeperClientPort(), zkClientPort);
-        }
+        LOG.info("setting zookeeper client Port to : " + hbaseOptions.getZkPort());
+        hbaseConfiguration.setInt(getHbaseOptions().getZookeeperClientPortKey(), hbaseOptions.getZkPort());
 
         // create a crawl table
-        initializeCrawlTable(hbaseConfiguration, tableName);
-        this.client = new HTable(hbaseConfiguration, tableName);
+        initializeCrawlTable(hbaseConfiguration, hbaseOptions.getHbaseTableName());
+        this.client = new HTable(hbaseConfiguration, hbaseOptions.getHbaseTableName());
     }
 
     /**
@@ -732,12 +728,13 @@ public class HBaseWriter extends WriterPoolMember implements Serializer {
             LOG.trace("Writing " + url + " as " + rowKey);
         }
 
-        // create an hbase updateable object (the put object)
-        // Constructor takes the rowkey as the only argument
+        // Modify the row key if its supposed to be stored in MD5 format
         if (getHbaseOptions().isMd5Key()) {
         	rowKey = DigestUtils.md5Hex(rowKey);
         }
 
+        // create an hbase updateable object (the put object)
+        // Constructor takes the rowkey as the only argument
         Put batchPut = new Put(Bytes.toBytes(rowKey));
 
         // write the target url to the url column

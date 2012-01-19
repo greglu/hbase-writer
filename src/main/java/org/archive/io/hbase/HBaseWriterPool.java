@@ -9,27 +9,20 @@ import org.archive.io.WriterPoolSettings;
 
 public class HBaseWriterPool extends WriterPool {
 
-	private String _zkQuorum;
-	private int _zkClientPort;
-	private String _tableName;
 	private HBaseParameters _parameters;
-	
+
 	public HBaseWriterPool(AtomicInteger serial, WriterPoolSettings settings,
-			int poolMaximumActive, int poolMaximumWait,
-			final String zkQuorum, final int zkClientPort, final String tableName, HBaseParameters parameters) {
+			int poolMaximumActive, int poolMaximumWait, HBaseParameters parameters) {
 
 		super(serial, settings, poolMaximumActive, poolMaximumWait);
 
-		_zkQuorum = zkQuorum;
-		_zkClientPort = zkClientPort;
-		_tableName = tableName;
 		_parameters = parameters;
 	}
 
 	@Override
 	protected WriterPoolMember makeWriter() {
 		try {
-			return new HBaseWriter(getSerialNo(), getSettings(), _zkQuorum, _zkClientPort, _tableName, _parameters);
+			return new HBaseWriter(getSerialNo(), getSettings(), _parameters);
 		} catch (IOException e) {
 			throw new RuntimeException("Couldn't create a " + HBaseWriter.class.getName() + " writer object");
 		}
