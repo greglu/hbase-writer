@@ -508,6 +508,7 @@ package org.archive.io.hbase;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -525,13 +526,15 @@ import org.apache.log4j.Logger;
 import org.archive.io.RecordingInputStream;
 import org.archive.io.RecordingOutputStream;
 import org.archive.io.ReplayInputStream;
+import org.archive.io.WriterPoolMember;
+import org.archive.io.WriterPoolSettings;
 import org.archive.modules.CrawlURI;
 
 /**
  * HBase implementation.
  *
  */
-public class HBaseWriter implements Serializer {
+public class HBaseWriter extends WriterPoolMember implements Serializer {
 
     private final Logger LOG = Logger.getLogger(this.getClass().getName());
 
@@ -567,7 +570,11 @@ public class HBaseWriter implements Serializer {
      *
      * @throws IOException Signals that an I/O exception has occurred.
      */
-    public HBaseWriter(final String zkQuorum, final int zkClientPort, final String tableName, HBaseParameters parameters)  throws IOException{
+    public HBaseWriter(AtomicInteger serialNo, final WriterPoolSettings settings,
+    		final String zkQuorum, final int zkClientPort, final String tableName, HBaseParameters parameters) throws IOException{
+
+    	super(serialNo, settings, null);
+
         this.hbaseOptions = parameters;
 
         if (tableName == null || tableName.length() <= 0) {

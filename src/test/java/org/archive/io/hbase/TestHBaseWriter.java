@@ -506,6 +506,7 @@ That's all there is to it!
 package org.archive.io.hbase;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -546,14 +547,14 @@ public class TestHBaseWriter {
 	public void testCreateHBaseWriter() throws IOException {
 		// Test
 		try {
-			hw = new HBaseWriter(zkQuorum, zkClientPort, "", null);
+			hw = new HBaseWriter(new AtomicInteger(), null, zkQuorum, zkClientPort, "", null);
 			Assert.assertNull(hw);
 		} catch (IllegalArgumentException e) {
 			Assert.assertNotNull(e);
 		}
 
 		try {
-			hw = new HBaseWriter(zkQuorum, zkClientPort, null, new HBaseParameters());
+			hw = new HBaseWriter(new AtomicInteger(), null, zkQuorum, zkClientPort, null, new HBaseParameters());
 			Assert.assertNull(hw);
 		} catch (IllegalArgumentException e) {
 			Assert.assertNotNull(e);

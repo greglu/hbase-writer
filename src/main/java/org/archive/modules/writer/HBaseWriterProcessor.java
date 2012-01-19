@@ -521,6 +521,7 @@ import org.archive.io.ReplayInputStream;
 import org.archive.io.WriterPoolMember;
 import org.archive.io.hbase.HBaseParameters;
 import org.archive.io.hbase.HBaseWriter;
+import org.archive.io.hbase.HBaseWriterPool;
 import org.archive.io.warc.WARCWriterPool;
 import org.archive.io.warc.WARCWriterPoolSettings;
 import org.archive.modules.CrawlURI;
@@ -668,7 +669,8 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
     
     @Override
     protected void setupPool(AtomicInteger serial) {
-        setPool(new WARCWriterPool(serial, this, getPoolMaxActive(), getMaxWaitForIdleMs()));
+    	setPool(new HBaseWriterPool(serial, this, getPoolMaxActive(), getMaxWaitForIdleMs(),
+    			zkQuorum, zkClientPort, hbaseTable, hbaseParameters));
     }
 
     @Override
@@ -763,15 +765,8 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
      * @throws IOException 
      */
     private boolean isRecordNew(CrawlURI curi) throws IOException {
-        WriterPoolMember writerPoolMember;
-        try {
-            writerPoolMember = getPool().borrowFile();
-        } catch (IOException e1) {
-            log.error("No writer could be borrowed from the pool: " + getPool().toString(), e1);
-            return false;
-        }
-        HBaseWriter baseWriter = new HBaseWriter(zkQuorum, zkClientPort, hbaseTable, hbaseParameters);
-        HTable hbaseTable = baseWriter.getClient();
+        HBaseWriter hbaseWriter = (HBaseWriter)getPool().borrowFile();
+        HTable hbaseTable = hbaseWriter.getClient();
         // Here we can generate the rowkey for this uri ...
         String url = curi.toString();
         String row = Keying.createKey(url);
@@ -795,10 +790,10 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
             return false;
         } finally {
             try {
-                getPool().returnFile(writerPoolMember);
+                getPool().returnFile(hbaseWriter);
             } catch (IOException e) {
                 log.error("Failed to add back writer to the pool after checking if a rowkey is new or existing , writerPoolMember: " 
-                		+ writerPoolMember, e);
+                		+ hbaseWriter, e);
                 return false;
             }
         }
@@ -817,19 +812,18 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
      * @throws IOException Signals that an I/O exception has occurred.
      */
     protected ProcessResult write(final CrawlURI curi, long recordLength, InputStream in) throws IOException {
-        WriterPoolMember writerPoolMember = getPool().borrowFile();
-        long writerPoolMemberPosition = writerPoolMember.getPosition();
-        HBaseWriter hbaseWriter = new HBaseWriter(zkQuorum, zkClientPort, hbaseTable, hbaseParameters);
+    	HBaseWriter hbaseWriter = (HBaseWriter)getPool().borrowFile();
+        long writerPoolMemberPosition = hbaseWriter.getPosition();
         try {
             hbaseWriter.write(curi, getHostAddress(curi), curi.getRecorder().getRecordedOutput(), curi.getRecorder().getRecordedInput());
         } finally {
-            setTotalBytesWritten(getTotalBytesWritten() + (writerPoolMember.getPosition() - writerPoolMemberPosition));
-            getPool().returnFile(writerPoolMember);
+            setTotalBytesWritten(getTotalBytesWritten() + (hbaseWriter.getPosition() - writerPoolMemberPosition));
+            getPool().returnFile(hbaseWriter);
         }
         return checkBytesWritten();
     }
-	
-	List<ConfigPath> getDefaultStorePaths() {
+
+    List<ConfigPath> getDefaultStorePaths() {
 		// TODO Auto-generated method stub
 		return null;
 	}
