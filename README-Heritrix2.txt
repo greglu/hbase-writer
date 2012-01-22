@@ -62,25 +62,54 @@ On the "Settings for sheet 'global'":
 did not type in the name of the processor properly -- see heritrix_out.log for errors).
 - Set at least the zkquorum and table configuration for HBaseWriterProcessor.
 
-zkquorum
+zkQuorum (required)
   The zookeeper quroum that serves the hbase master address.  Since hbase-0.20.0, the master server's address is returned by the zookeeper quorum.
-  So this value is a comma seperated list of the hosts listed in your zk quorum.
-  i.e.: zkHost1,zkHost2,zkHost3,10.2.34.55,zkhost.example.com
+  So this value is a comma seperated list of the zk quorum.
+  e.g. zkHost1,zkHost2,zkHost3
 
-zkclientport
-  The zookeeper quroum client port that clients should connect to to get HBase information.
-  i.e.: 2181  (this is the default)
-
-table
+hbaseTableName (required)
   Which table in HBase to write the crawl to.  This table will be created automatically if it doesnt exist.
-  i.e.: Webtable
+  e.g. crawl
+
+zkPort (defaults to 2181, which is the zookeeper default)
+  The zookeeper quroum client port that clients should connect to to get HBase information.
+  e.g. 2181
+
+contentColumnFamily
+  The column family name for where you want to save the content to. Defaults to "newcontent".
+
+contentColumnName
+  The column qualifier name for where you want to save the content to. Defaults to "raw_data" which becomes "newcontent:raw_data"
+
+curiColumnFamily
+  The column family name for storing the Crawl URI related information. Defaults to "curi".
+
+ipColumnName
+  The column qualifier name for storing the IP address. Defaults to "ip" which becomes "curi:ip".
+
+pathFromSeedColumnName
+  The column qualifier name for storing the path from seed. Defaults to "path-from-seed" which becomes "curi:path-from-seed".
+
+isSeedColumnName
+  The column qualifier name for storing whether the crawl is a seed. Defaults to "is-seed" which becomes "curi:is-seed".
+
+viaColumnName
+  The column qualifier name for storing where it came from. Defaults to "via" which becomes "curi:via".
+
+urlColumnName
+  The column qualifier name for storing the URL. Defaults to "url" which becomes "curi:url".
+
+requestColumnName
+  The column qualifier name for storing the request. Defaults to "request" which becomes "curi:request".
+
+onlyWriteNewRecords
+  Set to "false" by default.  In default mode, heritrix will crawl all urls regardless of existing rowkeys (urls).
+  By setting this to "true" you ensure that only new urls(rowkeys) are written to the crawl table.
+
+onlyProcessNewRecords
+  Set to "false" by default.  In default mode, heritrix will process (fetch and parse) all urls regardless of existing rowkeys (urls).
+  By setting this to "true" you ensure that only new urls(rowkeys) are processed by heritrix.  Also, if set to "true",
+  heritrix doesnt download any content that is already existing as a record in the hbase table.
   
-write-only-new-records
-  Set to "false" by default.  In default mode, heritrix will crawl all urls regardless of existing rowkeys (urls).  
-  By setting this to "true" you ensure that only new urls(rowkeys) are written to the crawl table.  
-
-process-only-new-records
-  Set to "false" by default.  In default mode, heritrix will process (fetch and parse) all urls regardless of existing rowkeys (urls).  
-  By setting this to "true" you ensure that only new urls(rowkeys) are processed by heritrix.  Also, if set to "true", 
-  heritrix doesnt download any content that is already existing as a record in the hbase table. 
-
+defaultMaxFileSizeInBytes
+  Set to 20MB (20*1024*1024 bytes) by default.  If data item is fetched and it exceeds this amount, the content will not be written to hbase.

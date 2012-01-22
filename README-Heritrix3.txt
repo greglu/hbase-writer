@@ -1,7 +1,7 @@
 Welcome to HBase-Writer README for Heritrix 3.  
 
 This document can also be found online here:
-http://code.google.com/p/hbase-writer/wiki/READMEHeritrix3
+http://code.google.com/p/hbase-writer/wiki/README-Heritrix3
 
 Specific versions of HBase-Writer now support different
 version combinations of Heritrix and HBase. Please refer to
@@ -61,16 +61,23 @@ Add the following beans to the disposition chain of your job configuration:
 {{{
 <!-- DISPOSITION CHAIN -->
 <bean id="hbaseParameterSettings" class="org.archive.io.hbase.HBaseParameters">
+	<!-- These settings are required -->
+	<property name="zkQuorum" value="localhost" />
+	<property name="hbaseTableName" value="crawl" />
+
+	<!-- This should reflect your installation, but 2181 is the default -->
+	<property name="zkPort" value="2181" />
+
+	<!-- All other settings are optional -->
+	<property name="onlyProcessNewRecords" value="false" />
+	<property name="onlyWriteNewRecords" value="false" />
 	<property name="contentColumnFamily" value="newcontent" />
+	<!-- 25 * 1024 * 1024 = 26214400 bytes -->
+	<property name="defaultMaxFileSizeInBytes" value="26214400" />
 	<!-- Overwrite more options here -->
 </bean>
 
 <bean id="hbaseWriterProcessor" class="org.archive.modules.writer.HBaseWriterProcessor">
-	<property name="zkQuorum" value="localhost" />
-	<property name="zkClientPort" value="2181" />
-	<property name="hbaseTable" value="crawl" />
-	<property name="onlyProcessNewRecords" value="false" />
-	<property name="onlyWriteNewRecords" value="false" />
 	<property name="hbaseParameters">
 		<ref bean="hbaseParameterSettings"/> 
 	</property>
@@ -78,11 +85,10 @@ Add the following beans to the disposition chain of your job configuration:
 
 <bean id="dispositionProcessors" class="org.archive.modules.DispositionChain">
 	<property name="processors">
-	<list>
-		<!-- write to aggregate archival files... -->
-		<ref bean="hbaseWriterProcessor"/>
-		<!-- other references -->
-	</list>
+		<list>
+			<ref bean="hbaseWriterProcessor"/>
+			<!-- other references -->
+		</list>
 	</property>
 </bean>
 }}}
@@ -90,38 +96,26 @@ Add the following beans to the disposition chain of your job configuration:
 
 With the following configurable properties:
 
-org.archive.modules.writer.HBaseWriterProcessor properties:
+org.archive.io.hbase.HBaseParameters properties:
 
-	zkQuorum
+	zkQuorum (required)
 	  The zookeeper quroum that serves the hbase master address.  Since hbase-0.20.0, the master server's address is returned by the zookeeper quorum.
 	  So this value is a comma seperated list of the zk quorum.
 	  e.g. zkHost1,zkHost2,zkHost3
 
-	zkClientPort
+	hbaseTableName (required)
+	  Which table in HBase to write the crawl to.  This table will be created automatically if it doesnt exist.
+	  e.g. crawl
+
+	zkPort (defaults to 2181, which is the zookeeper default)
 	  The zookeeper quroum client port that clients should connect to to get HBase information.
 	  e.g. 2181
 
-	hbaseTable
-	  Which table in HBase to write the crawl to.  This table will be created automatically if it doesnt exist.
-	  e.g. Webtable
-
-	onlyWriteNewRecords
-	  Set to "false" by default.  In default mode, heritrix will crawl all urls regardless of existing rowkeys (urls).
-	  By setting this to "true" you ensure that only new urls(rowkeys) are written to the crawl table.
-
-	onlyProcessNewRecords
-	  Set to "false" by default.  In default mode, heritrix will process (fetch and parse) all urls regardless of existing rowkeys (urls).
-	  By setting this to "true" you ensure that only new urls(rowkeys) are processed by heritrix.  Also, if set to "true",
-	  heritrix doesnt download any content that is already existing as a record in the hbase table.
-
-
-org.archive.io.hbase.HBaseParameters properties:
-
 	contentColumnFamily
-	  The column family name for where you want to save the content to. Defaults to "content".
+	  The column family name for where you want to save the content to. Defaults to "newcontent".
 
 	contentColumnName
-	  The column qualifier name for where you want to save the content to. Defaults to "raw_data" which becomes "content:raw_data"
+	  The column qualifier name for where you want to save the content to. Defaults to "raw_data" which becomes "newcontent:raw_data"
 
 	curiColumnFamily
 	  The column family name for storing the Crawl URI related information. Defaults to "curi".
@@ -144,6 +138,14 @@ org.archive.io.hbase.HBaseParameters properties:
 	requestColumnName
 	  The column qualifier name for storing the request. Defaults to "request" which becomes "curi:request".
 
+	onlyWriteNewRecords
+	  Set to "false" by default.  In default mode, heritrix will crawl all urls regardless of existing rowkeys (urls).
+	  By setting this to "true" you ensure that only new urls(rowkeys) are written to the crawl table.
 
-
-	
+	onlyProcessNewRecords
+	  Set to "false" by default.  In default mode, heritrix will process (fetch and parse) all urls regardless of existing rowkeys (urls).
+	  By setting this to "true" you ensure that only new urls(rowkeys) are processed by heritrix.  Also, if set to "true",
+	  heritrix doesnt download any content that is already existing as a record in the hbase table.
+	  
+	defaultMaxFileSizeInBytes
+	  Set to 20MB (20*1024*1024 bytes) by default.  If data item is fetched and it exceeds this amount, the content will not be written to hbase.

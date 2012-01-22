@@ -508,115 +508,262 @@ package org.archive.io.hbase;
 
 import org.archive.io.ArchiveFileConstants;
 
+import com.google.common.base.Preconditions;
+
 /**
- * Configures the values of the column family/qualifier used
- * for the crawl. Also contains a full set of default values that
- * are the same as the previous Heritrix2 implementation.
- *
- * Meant to be configured within the Spring framework either inline
- * of HBaseWriterProcessor or as a named bean and references later on.
- *
+ * Configures the values of the column family/qualifier used for the crawl. Also
+ * contains a full set of default values that are the same as the previous
+ * Heritrix2 implementation.
+ * 
+ * Meant to be configured within the Spring framework either inline of
+ * HBaseWriterProcessor or as a named bean and references later on.
+ * 
  * <pre>
  * {@code
  * <bean id="hbaseParameterSettings" class="org.archive.io.hbase.HBaseParameters">
- *   <property name="contentColumnFamily" value="newcontent" />
- *   <!-- Overwrite more options here -->
+ * 	<!-- These settings are required -->
+ * 	<property name="zkQuorum" value="localhost" />
+ * 	<property name="hbaseTableName" value="crawl" />
+ * 
+ * 	<!-- This should reflect your installation, but 2181 is the default -->
+ * 	<property name="zkPort" value="2181" />
+ * 
+ * 	<!-- All other settings are optional -->
+ * 	<property name="onlyProcessNewRecords" value="false" />
+ * 	<property name="onlyWriteNewRecords" value="false" />
+ * 	<property name="contentColumnFamily" value="newcontent" />
+ * 	<!-- Overwrite more options here -->
+ * </bean>
+ * 
+ * <bean id="hbaseWriterProcessor" class="org.archive.modules.writer.HBaseWriterProcessor">
+ * 	<property name="hbaseParameters">
+ * 		 <ref bean="hbaseParameterSettings"/> 
+ * 	</property>
+ * </bean>
+ * 
+ * <bean id="dispositionProcessors" class="org.archive.modules.DispositionChain">
+ * 	<property name="processors">
+ * 		 <list>
+ * 			<ref bean="hbaseWriterProcessor"/>
+ * 			<!-- other references -->
+ * 		</list>
+ * 	 </property>
  * </bean>
  * }
  * </pre>
- *
+ * 
  * @see org.archive.modules.writer.HBaseWriterProcessor
- *  {@link org.archive.modules.writer.HBaseWriterProcessor} for a full example
- *
+ *      {@link org.archive.modules.writer.HBaseWriterProcessor} for a full
+ *      example
+ * 
  */
 public class HBaseParameters implements ArchiveFileConstants {
 
-    /** DEFAULT OPTIONS **/
-    // "content" column family and qualifiers
-    public static final String CONTENT_COLUMN_FAMILY = "content";
-    public static final String CONTENT_COLUMN_NAME = "raw_data";
+	/** DEFAULT OPTIONS **/
+	public static final int ZK_PORT = 2181;
 
-    // "curi" column family and qualifiers
-    public static final String CURI_COLUMN_FAMILY = "curi";
-    public static final String IP_COLUMN_NAME = "ip";
-    public static final String PATH_FROM_SEED_COLUMN_NAME = "path-from-seed";
-    public static final String IS_SEED_COLUMN_NAME = "is-seed";
-    public static final String VIA_COLUMN_NAME = "via";
-    public static final String URL_COLUMN_NAME = "url";
-    public static final String REQUEST_COLUMN_NAME = "request";
+	// "content" column family and qualifiers
+	public static final String CONTENT_COLUMN_FAMILY = "content";
+	public static final String CONTENT_COLUMN_NAME = "raw_data";
 
-    // the zk client port name, this has to match what is in hbase-site.xml for the clientPort config attribute.
-    public static String ZOOKEEPER_CLIENT_PORT = "hbase.zookeeper.property.clientPort";
+	// "curi" column family and qualifiers
+	public static final String CURI_COLUMN_FAMILY = "curi";
+	public static final String IP_COLUMN_NAME = "ip";
+	public static final String PATH_FROM_SEED_COLUMN_NAME = "path-from-seed";
+	public static final String IS_SEED_COLUMN_NAME = "is-seed";
+	public static final String VIA_COLUMN_NAME = "via";
+	public static final String URL_COLUMN_NAME = "url";
+	public static final String REQUEST_COLUMN_NAME = "request";
+	
+	public static final long DEFAULT_MAX_FILE_SIZE_IN_BYTES = (long)(20 * 1024 * 1024);
 
+	// the zk client port name, this has to match what is in hbase-site.xml for
+	// the clientPort config attribute.
+	public static String ZOOKEEPER_CLIENT_PORT = "hbase.zookeeper.property.clientPort";
 
-    /** ACTUAL OPTIONS INITIALIZED TO DEFAULTS **/
-    private String contentColumnFamily = CONTENT_COLUMN_FAMILY;
-    private String contentColumnName = CONTENT_COLUMN_NAME;
+	/** ACTUAL OPTIONS INITIALIZED TO DEFAULTS **/
+	private String zkQuorum = null;
+	private int zkPort = ZK_PORT;
+	private String hbaseTableName = null;
 
-    private String curiColumnFamily = CURI_COLUMN_FAMILY;
-    private String ipColumnName = IP_COLUMN_NAME;
-    private String pathFromSeedColumnName = PATH_FROM_SEED_COLUMN_NAME;
-    private String isSeedColumnName = IS_SEED_COLUMN_NAME;
-    private String viaColumnName = VIA_COLUMN_NAME;
-    private String urlColumnName = URL_COLUMN_NAME;
-    private String requestColumnName = REQUEST_COLUMN_NAME;
+	private String contentColumnFamily = CONTENT_COLUMN_FAMILY;
+	private String contentColumnName = CONTENT_COLUMN_NAME;
 
+	private String curiColumnFamily = CURI_COLUMN_FAMILY;
+	private String ipColumnName = IP_COLUMN_NAME;
+	private String pathFromSeedColumnName = PATH_FROM_SEED_COLUMN_NAME;
+	private String isSeedColumnName = IS_SEED_COLUMN_NAME;
+	private String viaColumnName = VIA_COLUMN_NAME;
+	private String urlColumnName = URL_COLUMN_NAME;
+	private String requestColumnName = REQUEST_COLUMN_NAME;
+	private long defaultMaxFileSizeInBytes = DEFAULT_MAX_FILE_SIZE_IN_BYTES;
 
-    public String getContentColumnFamily() {
-        return contentColumnFamily;
-    }
-    public void setContentColumnFamily(String contentColumnFamily) {
-        this.contentColumnFamily = contentColumnFamily;
-    }
-    public String getContentColumnName() {
-        return contentColumnName;
-    }
-    public void setContentColumnName(String contentColumnName) {
-        this.contentColumnName = contentColumnName;
-    }
-    public String getCuriColumnFamily() {
-        return curiColumnFamily;
-    }
-    public void setCuriColumnFamily(String curiColumnFamily) {
-        this.curiColumnFamily = curiColumnFamily;
-    }
-    public String getIpColumnName() {
-        return ipColumnName;
-    }
-    public void setIpColumnName(String ipColumnName) {
-        this.ipColumnName = ipColumnName;
-    }
-    public String getPathFromSeedColumnName() {
-        return pathFromSeedColumnName;
-    }
-    public void setPathFromSeedColumnName(String pathFromSeedColumnName) {
-        this.pathFromSeedColumnName = pathFromSeedColumnName;
-    }
-    public String getIsSeedColumnName() {
-        return isSeedColumnName;
-    }
-    public void setIsSeedColumnName(String isSeedColumnName) {
-        this.isSeedColumnName = isSeedColumnName;
-    }
-    public String getViaColumnName() {
-        return viaColumnName;
-    }
-    public void setViaColumnName(String viaColumnName) {
-        this.viaColumnName = viaColumnName;
-    }
-    public String getUrlColumnName() {
-        return urlColumnName;
-    }
-    public void setUrlColumnName(String urlColumnName) {
-        this.urlColumnName = urlColumnName;
-    }
-    public String getRequestColumnName() {
-        return requestColumnName;
-    }
-    public void setRequestColumnName(String requestColumnName) {
-        this.requestColumnName = requestColumnName;
-    }
-    public String getZookeeperClientPort() {
-        return ZOOKEEPER_CLIENT_PORT;
-    }
+	private boolean md5Key = false;
+	private Serializer serializer = null;
+
+	/**
+	 * Default is false, which will write all urls to the HBase table. If set to
+	 * true, then only write urls that are new rowkey records. Heritrix is good
+	 * about not hitting the same url twice, so this feature is to ensure that
+	 * you can run multiple sessions of the same crawl configuration and not
+	 * write the same url more than once to the same hbase table. You may just
+	 * want to crawl a site to see what new urls have been added over time, or
+	 * continue where you left off on a terminated crawl. Heritrix itself does
+	 * support this functionality by supporting Heritrix checkpoints during a
+	 * crawl session, so this options may not be a necessary option if
+	 * checkpoints work for you.
+	 */
+	private boolean onlyWriteNewRecords = false;
+
+	/**
+	 * Default is false, which will process all urls in the HBase table. If set
+	 * to true, then HBase-Writer will only process urls that are new rowkey
+	 * records in the table. In this mode, Heritrix wont even fetch and parse
+	 * the content served at the url if it already exists as a rowkey in the
+	 * HBase table.
+	 */
+	private boolean onlyProcessNewRecords = false;
+
+	public String getZkQuorum() {
+		Preconditions.checkState(zkQuorum != null && !zkQuorum.isEmpty(), getClass().getName() + " instances need zkQuorum parameter set before accessing");
+		return zkQuorum;
+	}
+
+	public void setZkQuorum(String quorum) {
+		zkQuorum = quorum;
+	}
+
+	public int getZkPort() {
+		return zkPort;
+	}
+
+	public void setZkPort(int port) {
+		zkPort = port;
+	}
+
+	public String getHbaseTableName() {
+		Preconditions.checkState(hbaseTableName != null && !hbaseTableName.isEmpty(), getClass().getName()
+				+ " instances need hbaseTableName parameter set before accessing");
+		return hbaseTableName;
+	}
+
+	public void setHbaseTableName(String tableName) {
+		hbaseTableName = tableName;
+	}
+
+	public String getContentColumnFamily() {
+		return contentColumnFamily;
+	}
+
+	public void setContentColumnFamily(String contentColumnFamily) {
+		this.contentColumnFamily = contentColumnFamily;
+	}
+
+	public String getContentColumnName() {
+		return contentColumnName;
+	}
+
+	public void setContentColumnName(String contentColumnName) {
+		this.contentColumnName = contentColumnName;
+	}
+
+	public String getCuriColumnFamily() {
+		return curiColumnFamily;
+	}
+
+	public void setCuriColumnFamily(String curiColumnFamily) {
+		this.curiColumnFamily = curiColumnFamily;
+	}
+
+	public String getIpColumnName() {
+		return ipColumnName;
+	}
+
+	public void setIpColumnName(String ipColumnName) {
+		this.ipColumnName = ipColumnName;
+	}
+
+	public String getPathFromSeedColumnName() {
+		return pathFromSeedColumnName;
+	}
+
+	public void setPathFromSeedColumnName(String pathFromSeedColumnName) {
+		this.pathFromSeedColumnName = pathFromSeedColumnName;
+	}
+
+	public String getIsSeedColumnName() {
+		return isSeedColumnName;
+	}
+
+	public void setIsSeedColumnName(String isSeedColumnName) {
+		this.isSeedColumnName = isSeedColumnName;
+	}
+
+	public String getViaColumnName() {
+		return viaColumnName;
+	}
+
+	public void setViaColumnName(String viaColumnName) {
+		this.viaColumnName = viaColumnName;
+	}
+
+	public String getUrlColumnName() {
+		return urlColumnName;
+	}
+
+	public void setUrlColumnName(String urlColumnName) {
+		this.urlColumnName = urlColumnName;
+	}
+
+	public String getRequestColumnName() {
+		return requestColumnName;
+	}
+
+	public void setRequestColumnName(String requestColumnName) {
+		this.requestColumnName = requestColumnName;
+	}
+
+	public String getZookeeperClientPortKey() {
+		return ZOOKEEPER_CLIENT_PORT;
+	}
+
+	public Serializer getSerializer() {
+		return serializer;
+	}
+
+	public void setSerializer(Serializer serializer) {
+		this.serializer = serializer;
+	}
+
+	public boolean isMd5Key() {
+		return this.md5Key;
+	}
+
+	public void setMd5Key(boolean md5Key) {
+		this.md5Key = md5Key;
+	}
+
+	public boolean isOnlyWriteNewRecords() {
+		return onlyWriteNewRecords;
+	}
+
+	public void setOnlyWriteNewRecords(boolean onlyWriteNewRecords) {
+		this.onlyWriteNewRecords = onlyWriteNewRecords;
+	}
+
+	public boolean isOnlyProcessNewRecords() {
+		return onlyProcessNewRecords;
+	}
+
+	public void setOnlyProcessNewRecords(boolean onlyProcessNewRecords) {
+		this.onlyProcessNewRecords = onlyProcessNewRecords;
+	}
+
+	public long getDefaultMaxFileSizeInBytes() {
+		return defaultMaxFileSizeInBytes;
+	}
+
+	public void setDefaultMaxFileSizeInBytes(long defaultMaxFileSizeInBytes) {
+		this.defaultMaxFileSizeInBytes = defaultMaxFileSizeInBytes;
+	}
 }

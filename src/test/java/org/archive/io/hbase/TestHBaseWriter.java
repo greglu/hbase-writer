@@ -506,30 +506,28 @@ That's all there is to it!
 package org.archive.io.hbase;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import org.archive.io.hbase.HBaseWriter;
-import org.archive.io.hbase.HBaseParameters;
 
 /**
  * The Class TestHBaseWriter.
  */
 public class TestHBaseWriter {
-	
+
 	/** The zkQuorum. */
 	String zkQuorum = "localhost";
-	
+
 	/** The zkClientPort. */
 	int zkClientPort = 2181;
-	
+
 	/** The table. */
 	String table = "test";
-	
+
 	/** The pool maximum active. */
 	int poolMaximumActive = 10;
-	
+
 	/** The pool maximum wait. */
 	int poolMaximumWait = 20;
 
@@ -540,22 +538,23 @@ public class TestHBaseWriter {
 	 * Test that bad table values cannot be used when creating an instance of
 	 * HbaseWriter.
 	 * 
-	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
 	 */
 	@Test()
 	public void testCreateHBaseWriter() throws IOException {
 		// Test
 		try {
-			hw = new HBaseWriter(zkQuorum, zkClientPort, "", null);
+			hw = new HBaseWriter(new AtomicInteger(), null, null);
 			Assert.assertNull(hw);
 		} catch (IllegalArgumentException e) {
 			Assert.assertNotNull(e);
 		}
 
 		try {
-			hw = new HBaseWriter(zkQuorum, zkClientPort, null, new HBaseParameters());
+			hw = new HBaseWriter(new AtomicInteger(), null, new HBaseParameters());
 			Assert.assertNull(hw);
-		} catch (IllegalArgumentException e) {
+		} catch (IllegalStateException e) {
 			Assert.assertNotNull(e);
 		}
 

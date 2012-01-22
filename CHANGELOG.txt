@@ -2,6 +2,15 @@ HBase-Writer Change Log
 
 Current /trunk - Compatible with hadoop-core-0.20.205.0, hbase-0.90.3 & heritrix 3.1.0
 
+Release 0.90.4 - 23.1.2012
+	1. Added support to change max file size.
+	2. Major bug fix submitted by Greg Lu, all the usages of the connection pooling functionality built into Heritrix were not being used
+			and instead HBase-writer was creating a new HTable objects indirectly for every page being saved.  This has been fixed.
+			Even worse, the connections weren't being cleaned up properly and would stick around until the process was shut down.    
+			The connections are now being closed.  Thanks again to Greg Lu for the work done to fix this problem.
+	3. Moved all configuration options to HBaseParameters class
+	4. HBaseWriterPool has been added back extending WriterPool from Heritrix, No longer using WARCWriterPool.
+
 Release 0.90.3 - 16.11.2011
   8th Release - Compatible with hadoop-core-0.20.205.0, hbase-0.90.3 & heritrix 3.1.0
 	1. HBaseWriterPool.java has been removed as it is no longer used, now using WARCWriterPool from Heritrix.

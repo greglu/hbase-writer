@@ -509,17 +509,15 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import org.archive.modules.writer.HBaseWriterProcessor;
-
 /**
  * The Class TestHBaseWriterProcessor.
  * 
  * @author rsmith
  * 
- * TODO: mock objects should be used here to test the api integrity.
+ *         TODO: mock objects should be used here to test the api integrity.
  */
 public class TestHBaseWriterProcessor {
-	
+
 	/** The hwproc. */
 	HBaseWriterProcessor hwproc;
 
@@ -539,6 +537,5 @@ public class TestHBaseWriterProcessor {
 		Assert.assertNotNull(hwproc);
 		Assert.assertEquals(hwproc.getURICount(), 0);
 	}
-	
-	
+
 }

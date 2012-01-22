@@ -2,7 +2,7 @@ This page outlines what versions of Hbase-Writer are compatible with which versi
 
 Hbase Writer
 
-* hbase-writer 0.90.3
+* hbase-writer 0.90.X
     compatible with: Heritrix 2.X/3.X, Hadoop 0.20.205.X, HBase 0.90.X, Zookeeper 3.3.X
 
 * hbase-writer 0.9
