@@ -614,7 +614,10 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
 	 */
 	@Override
 	long getDefaultMaxFileSize() {
-		return (hbaseParameters.getDefaultMaxFileSizeInBytes());
+		if (hbaseParameters != null) {
+			return (hbaseParameters.getDefaultMaxFileSizeInBytes());			
+		} 
+		return HBaseParameters.DEFAULT_MAX_FILE_SIZE_IN_BYTES;
 	}
 
 	/* (non-Javadoc)
