@@ -598,7 +598,7 @@ public class HBaseParameters implements ArchiveFileConstants {
 	// the zk client port name, this has to match what is in hbase-site.xml for
 	// the clientPort config attribute.
 	/** The ZOOKEEPE r_ clien t_ port. */
-	public static String ZOOKEEPER_CLIENT_PORT = "hbase.zookeeper.property.clientPort";
+	public static final String ZOOKEEPER_CLIENT_PORT = "hbase.zookeeper.property.clientPort";
 
 	/** ACTUAL OPTIONS INITIALIZED TO DEFAULTS *. */
 	private String zkQuorum = null;
