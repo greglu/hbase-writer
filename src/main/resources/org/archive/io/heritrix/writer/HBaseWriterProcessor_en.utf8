@@ -23,13 +23,26 @@ Name of the HBase table to write crawl to
 zkquorum-description:
 quorum of zk hosts that describe where the hbase master is.
 
-zkclientport-description:
+zkport-description:
 The zookeeper quroum client port that clients should connect to to get HBase information.
 
-write-only-new-records-description:
+only-write-new-records-description:
 If set to true, only write new rowkey records (urls) to hbase.  
 Default is set to false, which writes all urls that are crawled.
 
-process-only-new-records-description:
+only-process-new-records-description:
 If set to true, only process (fetch and parse) new rowkey records (urls) to crawl.  
 Default is set to false, which fetchs and parses all urls, even if they exist in hbase.
+
+content-column-family-description:
+The column family name for where you want to save the content to. Defaults to "newcontent".
+
+content-column-name-description:
+The column qualifier name for where you want to save the content to. Defaults to "raw_data" which becomes "newcontent:raw_data"
+
+curiColumnFamily
+The column family name for storing the Crawl URI related information. Defaults to "curi".
+
+default-max-file-size-in-bytes-description:
+Set to 20MB (20*1024*1024 bytes) by default.  If data item is fetched and it exceeds this amount, the content will not be written to hbase.
+
