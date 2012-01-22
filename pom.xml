@@ -168,12 +168,12 @@
 		</developer>
 
 		<developer>
-			<id>greglu</id>
+			<id>greg.lu</id>
 			<name>Greg Lu</name>
 			<email>greg@hopper.com</email>
-			<url>http://openplaces.org/</url>
-			<organization>OpenPlaces</organization>
-			<organizationUrl>http://openplaces.org/</organizationUrl>
+			<url>http://hopper.com/</url>
+			<organization>Hopper</organization>
+			<organizationUrl>http://hopper.com/</organizationUrl>
 			<roles>
 				<role>Contributer</role>
 			</roles>
@@ -388,7 +388,6 @@
 				<configuration>
 					<source>${jdk.version}</source>
 					<target>${jdk.version}</target>
-					<targetJdk>${compileSource}</targetJdk>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -461,10 +460,9 @@
 					<exclude>${project.repository.url} http://java.net</exclude>
 				</configuration>
 			</plugin>
-			<!-- causes site not to build, causes doxia error. 
-			<plugin> <artifactId>maven-project-info-reports-plugin</artifactId> 
+			<!-- causes site not to build, causes doxia error. <plugin> <artifactId>maven-project-info-reports-plugin</artifactId> 
 				</plugin> -->
-			<plugin> 
+			<plugin>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
 				<version>${plugin.project.info.reports.version}</version>
 			</plugin>
@@ -490,7 +488,7 @@
 		<!-- End of Project variables -->
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    	<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- Hadoop and hbase both require Java6 to run now -->
 		<jdk.version>1.6</jdk.version>
@@ -524,7 +522,7 @@
 
 		<!-- Maven 2 <plugin.build.site.version>2.2</plugin.build.site.version> -->
 		<!-- Maven 3 -->
-		
+
 		<plugin.build.site.version>3.0</plugin.build.site.version>
 
 		<plugin.build.release.version>2.1</plugin.build.release.version>

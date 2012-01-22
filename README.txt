@@ -27,11 +27,11 @@ In turn, these tables are directly supported by the Map/Reduce framework via HBa
 = GETTING STARTED = 
 
 HBase-Writer now supports Heritrix 2 and 3. Please refer to the corresponding
-README-Heritrix*.txt files for specific instructions.
-
-http://code.google.com/p/hbase-writer/wiki/READMEHeritrix2
+READMEHeritrix*.txt files for specific instructions.
 
 http://code.google.com/p/hbase-writer/wiki/READMEHeritrix3
+
+http://code.google.com/p/hbase-writer/wiki/READMEHeritrix2
 
 = COMPILING THE SOURCE =
 
@@ -62,7 +62,7 @@ A sample settings.xml file:
 	  <id>myBuild</id>
 	  <properties>
             <heritrix.version>3.1.0</heritrix.version>
-            <hbase.version>0.90.3</hbase.version>
+            <hbase.version>0.90.5</hbase.version>
             <hadoop.version>0.20.205.0</hadoop.version>
             <zookeeper.version>3.3.2</zookeeper.version>
 	  </properties>
