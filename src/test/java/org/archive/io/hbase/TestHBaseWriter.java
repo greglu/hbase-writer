@@ -511,6 +511,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class TestHBaseWriter.
  */

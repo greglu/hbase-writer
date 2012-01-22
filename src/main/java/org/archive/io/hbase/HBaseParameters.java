@@ -510,6 +510,7 @@ import org.archive.io.ArchiveFileConstants;
 
 import com.google.common.base.Preconditions;
 
+// TODO: Auto-generated Javadoc
 /**
  * Configures the values of the column family/qualifier used for the crawl. Also
  * contains a full set of default values that are the same as the previous
@@ -559,46 +560,89 @@ import com.google.common.base.Preconditions;
  */
 public class HBaseParameters implements ArchiveFileConstants {
 
-	/** DEFAULT OPTIONS **/
+	/** DEFAULT OPTIONS *. */
 	public static final int ZK_PORT = 2181;
 
 	// "content" column family and qualifiers
+	/** The Constant CONTENT_COLUMN_FAMILY. */
 	public static final String CONTENT_COLUMN_FAMILY = "content";
+	
+	/** The Constant CONTENT_COLUMN_NAME. */
 	public static final String CONTENT_COLUMN_NAME = "raw_data";
 
 	// "curi" column family and qualifiers
+	/** The Constant CURI_COLUMN_FAMILY. */
 	public static final String CURI_COLUMN_FAMILY = "curi";
+	
+	/** The Constant IP_COLUMN_NAME. */
 	public static final String IP_COLUMN_NAME = "ip";
+	
+	/** The Constant PATH_FROM_SEED_COLUMN_NAME. */
 	public static final String PATH_FROM_SEED_COLUMN_NAME = "path-from-seed";
+	
+	/** The Constant IS_SEED_COLUMN_NAME. */
 	public static final String IS_SEED_COLUMN_NAME = "is-seed";
+	
+	/** The Constant VIA_COLUMN_NAME. */
 	public static final String VIA_COLUMN_NAME = "via";
+	
+	/** The Constant URL_COLUMN_NAME. */
 	public static final String URL_COLUMN_NAME = "url";
+	
+	/** The Constant REQUEST_COLUMN_NAME. */
 	public static final String REQUEST_COLUMN_NAME = "request";
 	
+	/** The Constant DEFAULT_MAX_FILE_SIZE_IN_BYTES. */
 	public static final long DEFAULT_MAX_FILE_SIZE_IN_BYTES = (long)(20 * 1024 * 1024);
 
 	// the zk client port name, this has to match what is in hbase-site.xml for
 	// the clientPort config attribute.
+	/** The ZOOKEEPE r_ clien t_ port. */
 	public static String ZOOKEEPER_CLIENT_PORT = "hbase.zookeeper.property.clientPort";
 
-	/** ACTUAL OPTIONS INITIALIZED TO DEFAULTS **/
+	/** ACTUAL OPTIONS INITIALIZED TO DEFAULTS *. */
 	private String zkQuorum = null;
+	
+	/** The zk port. */
 	private int zkPort = ZK_PORT;
+	
+	/** The hbase table name. */
 	private String hbaseTableName = null;
 
+	/** The content column family. */
 	private String contentColumnFamily = CONTENT_COLUMN_FAMILY;
+	
+	/** The content column name. */
 	private String contentColumnName = CONTENT_COLUMN_NAME;
 
+	/** The curi column family. */
 	private String curiColumnFamily = CURI_COLUMN_FAMILY;
+	
+	/** The ip column name. */
 	private String ipColumnName = IP_COLUMN_NAME;
+	
+	/** The path from seed column name. */
 	private String pathFromSeedColumnName = PATH_FROM_SEED_COLUMN_NAME;
+	
+	/** The is seed column name. */
 	private String isSeedColumnName = IS_SEED_COLUMN_NAME;
+	
+	/** The via column name. */
 	private String viaColumnName = VIA_COLUMN_NAME;
+	
+	/** The url column name. */
 	private String urlColumnName = URL_COLUMN_NAME;
+	
+	/** The request column name. */
 	private String requestColumnName = REQUEST_COLUMN_NAME;
+	
+	/** The default max file size in bytes. */
 	private long defaultMaxFileSizeInBytes = DEFAULT_MAX_FILE_SIZE_IN_BYTES;
 
+	/** The md5 key. */
 	private boolean md5Key = false;
+	
+	/** The serializer. */
 	private Serializer serializer = null;
 
 	/**
@@ -624,145 +668,320 @@ public class HBaseParameters implements ArchiveFileConstants {
 	 */
 	private boolean onlyProcessNewRecords = false;
 
+	/**
+	 * Gets the zk quorum.
+	 *
+	 * @return the zk quorum
+	 */
 	public String getZkQuorum() {
 		Preconditions.checkState(zkQuorum != null && !zkQuorum.isEmpty(), getClass().getName() + " instances need zkQuorum parameter set before accessing");
 		return zkQuorum;
 	}
 
+	/**
+	 * Sets the zk quorum.
+	 *
+	 * @param quorum the new zk quorum
+	 */
 	public void setZkQuorum(String quorum) {
 		zkQuorum = quorum;
 	}
 
+	/**
+	 * Gets the zk port.
+	 *
+	 * @return the zk port
+	 */
 	public int getZkPort() {
 		return zkPort;
 	}
 
+	/**
+	 * Sets the zk port.
+	 *
+	 * @param port the new zk port
+	 */
 	public void setZkPort(int port) {
 		zkPort = port;
 	}
 
+	/**
+	 * Gets the hbase table name.
+	 *
+	 * @return the hbase table name
+	 */
 	public String getHbaseTableName() {
 		Preconditions.checkState(hbaseTableName != null && !hbaseTableName.isEmpty(), getClass().getName()
 				+ " instances need hbaseTableName parameter set before accessing");
 		return hbaseTableName;
 	}
 
+	/**
+	 * Sets the hbase table name.
+	 *
+	 * @param tableName the new hbase table name
+	 */
 	public void setHbaseTableName(String tableName) {
 		hbaseTableName = tableName;
 	}
 
+	/**
+	 * Gets the content column family.
+	 *
+	 * @return the content column family
+	 */
 	public String getContentColumnFamily() {
 		return contentColumnFamily;
 	}
 
+	/**
+	 * Sets the content column family.
+	 *
+	 * @param contentColumnFamily the new content column family
+	 */
 	public void setContentColumnFamily(String contentColumnFamily) {
 		this.contentColumnFamily = contentColumnFamily;
 	}
 
+	/**
+	 * Gets the content column name.
+	 *
+	 * @return the content column name
+	 */
 	public String getContentColumnName() {
 		return contentColumnName;
 	}
 
+	/**
+	 * Sets the content column name.
+	 *
+	 * @param contentColumnName the new content column name
+	 */
 	public void setContentColumnName(String contentColumnName) {
 		this.contentColumnName = contentColumnName;
 	}
 
+	/**
+	 * Gets the curi column family.
+	 *
+	 * @return the curi column family
+	 */
 	public String getCuriColumnFamily() {
 		return curiColumnFamily;
 	}
 
+	/**
+	 * Sets the curi column family.
+	 *
+	 * @param curiColumnFamily the new curi column family
+	 */
 	public void setCuriColumnFamily(String curiColumnFamily) {
 		this.curiColumnFamily = curiColumnFamily;
 	}
 
+	/**
+	 * Gets the ip column name.
+	 *
+	 * @return the ip column name
+	 */
 	public String getIpColumnName() {
 		return ipColumnName;
 	}
 
+	/**
+	 * Sets the ip column name.
+	 *
+	 * @param ipColumnName the new ip column name
+	 */
 	public void setIpColumnName(String ipColumnName) {
 		this.ipColumnName = ipColumnName;
 	}
 
+	/**
+	 * Gets the path from seed column name.
+	 *
+	 * @return the path from seed column name
+	 */
 	public String getPathFromSeedColumnName() {
 		return pathFromSeedColumnName;
 	}
 
+	/**
+	 * Sets the path from seed column name.
+	 *
+	 * @param pathFromSeedColumnName the new path from seed column name
+	 */
 	public void setPathFromSeedColumnName(String pathFromSeedColumnName) {
 		this.pathFromSeedColumnName = pathFromSeedColumnName;
 	}
 
+	/**
+	 * Gets the checks if is seed column name.
+	 *
+	 * @return the checks if is seed column name
+	 */
 	public String getIsSeedColumnName() {
 		return isSeedColumnName;
 	}
 
+	/**
+	 * Sets the checks if is seed column name.
+	 *
+	 * @param isSeedColumnName the new checks if is seed column name
+	 */
 	public void setIsSeedColumnName(String isSeedColumnName) {
 		this.isSeedColumnName = isSeedColumnName;
 	}
 
+	/**
+	 * Gets the via column name.
+	 *
+	 * @return the via column name
+	 */
 	public String getViaColumnName() {
 		return viaColumnName;
 	}
 
+	/**
+	 * Sets the via column name.
+	 *
+	 * @param viaColumnName the new via column name
+	 */
 	public void setViaColumnName(String viaColumnName) {
 		this.viaColumnName = viaColumnName;
 	}
 
+	/**
+	 * Gets the url column name.
+	 *
+	 * @return the url column name
+	 */
 	public String getUrlColumnName() {
 		return urlColumnName;
 	}
 
+	/**
+	 * Sets the url column name.
+	 *
+	 * @param urlColumnName the new url column name
+	 */
 	public void setUrlColumnName(String urlColumnName) {
 		this.urlColumnName = urlColumnName;
 	}
 
+	/**
+	 * Gets the request column name.
+	 *
+	 * @return the request column name
+	 */
 	public String getRequestColumnName() {
 		return requestColumnName;
 	}
 
+	/**
+	 * Sets the request column name.
+	 *
+	 * @param requestColumnName the new request column name
+	 */
 	public void setRequestColumnName(String requestColumnName) {
 		this.requestColumnName = requestColumnName;
 	}
 
+	/**
+	 * Gets the zookeeper client port key.
+	 *
+	 * @return the zookeeper client port key
+	 */
 	public String getZookeeperClientPortKey() {
 		return ZOOKEEPER_CLIENT_PORT;
 	}
 
+	/**
+	 * Gets the serializer.
+	 *
+	 * @return the serializer
+	 */
 	public Serializer getSerializer() {
 		return serializer;
 	}
 
+	/**
+	 * Sets the serializer.
+	 *
+	 * @param serializer the new serializer
+	 */
 	public void setSerializer(Serializer serializer) {
 		this.serializer = serializer;
 	}
 
+	/**
+	 * Checks if is md5 key.
+	 *
+	 * @return true, if is md5 key
+	 */
 	public boolean isMd5Key() {
 		return this.md5Key;
 	}
 
+	/**
+	 * Sets the md5 key.
+	 *
+	 * @param md5Key the new md5 key
+	 */
 	public void setMd5Key(boolean md5Key) {
 		this.md5Key = md5Key;
 	}
 
+	/**
+	 * Checks if is only write new records.
+	 *
+	 * @return true, if is only write new records
+	 */
 	public boolean isOnlyWriteNewRecords() {
 		return onlyWriteNewRecords;
 	}
 
+	/**
+	 * Sets the only write new records.
+	 *
+	 * @param onlyWriteNewRecords the new only write new records
+	 */
 	public void setOnlyWriteNewRecords(boolean onlyWriteNewRecords) {
 		this.onlyWriteNewRecords = onlyWriteNewRecords;
 	}
 
+	/**
+	 * Checks if is only process new records.
+	 *
+	 * @return true, if is only process new records
+	 */
 	public boolean isOnlyProcessNewRecords() {
 		return onlyProcessNewRecords;
 	}
 
+	/**
+	 * Sets the only process new records.
+	 *
+	 * @param onlyProcessNewRecords the new only process new records
+	 */
 	public void setOnlyProcessNewRecords(boolean onlyProcessNewRecords) {
 		this.onlyProcessNewRecords = onlyProcessNewRecords;
 	}
 
+	/**
+	 * Gets the default max file size in bytes.
+	 *
+	 * @return the default max file size in bytes
+	 */
 	public long getDefaultMaxFileSizeInBytes() {
 		return defaultMaxFileSizeInBytes;
 	}
 
+	/**
+	 * Sets the default max file size in bytes.
+	 *
+	 * @param defaultMaxFileSizeInBytes the new default max file size in bytes
+	 */
 	public void setDefaultMaxFileSizeInBytes(long defaultMaxFileSizeInBytes) {
 		this.defaultMaxFileSizeInBytes = defaultMaxFileSizeInBytes;
 	}

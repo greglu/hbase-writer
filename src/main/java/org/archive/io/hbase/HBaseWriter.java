@@ -533,19 +533,26 @@ import org.archive.modules.CrawlURI;
 
 import com.google.common.base.Preconditions;
 
+// TODO: Auto-generated Javadoc
 /**
  * HBase implementation.
  * 
  */
 public class HBaseWriter extends WriterPoolMember implements Serializer {
 
+	/** The log. */
 	Logger log = Logger.getLogger(HBaseWriter.class.getName());
 	
+	/** The hbase options. */
 	private HBaseParameters hbaseOptions;
 	
+	/** The client. */
 	private final HTable client;
 
 	/**
+	 * Gets the hbase options.
+	 *
+	 * @return the hbase options
 	 * @see org.archive.io.hbase.HBaseParameters
 	 */
 	public HBaseParameters getHbaseOptions() {
@@ -561,6 +568,14 @@ public class HBaseWriter extends WriterPoolMember implements Serializer {
 		return client;
 	}
 	
+	/**
+	 * Instantiates a new h base writer.
+	 *
+	 * @param serialNo the serial no
+	 * @param settings the settings
+	 * @param parameters the parameters
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	public HBaseWriter(AtomicInteger serialNo, final WriterPoolSettings settings, HBaseParameters parameters) throws IOException {
 		// Instantiates a new HBaseWriter for the WriterPool to use in heritrix.
 		super(serialNo, settings, null);
@@ -807,6 +822,9 @@ public class HBaseWriter extends WriterPoolMember implements Serializer {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.archive.io.hbase.Serializer#serialize(byte[])
+	 */
 	@Override
 	public byte[] serialize(byte[] bytes) {
 		if (getHbaseOptions().getSerializer() != null) {

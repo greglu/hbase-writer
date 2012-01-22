@@ -527,6 +527,7 @@ import org.archive.spring.ConfigPath;
 import org.archive.uid.RecordIDGenerator;
 import org.archive.util.ArchiveUtils;
 
+// TODO: Auto-generated Javadoc
 /**
  * A <a href="http://crawler.archive.org">Heritrix 3</a> processor that writes
  * to <a href="http://hbase.org">Hadoop HBase</a>.
@@ -576,15 +577,20 @@ import org.archive.util.ArchiveUtils;
  */
 public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWriterPoolSettings {
 
+	/** The Constant log. */
 	private static final Logger log = Logger.getLogger(HBaseWriterProcessor.class);
 
+	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 7019522841438703184L;
 
-	/**
-	 * @see org.archive.io.hbase.HBaseParameters
-	 */
+	/** The hbase parameters. @see org.archive.io.hbase.HBaseParameters */
 	HBaseParameters hbaseParameters = null;
 
+	/**
+	 * Gets the hbase parameters.
+	 *
+	 * @return the hbase parameters
+	 */
 	public synchronized HBaseParameters getHbaseParameters() {
 		if (hbaseParameters == null)
 			this.hbaseParameters = new HBaseParameters();
@@ -592,20 +598,36 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
 		return hbaseParameters;
 	}
 
+	/**
+	 * Sets the hbase parameters.
+	 *
+	 * @param options the new hbase parameters
+	 */
 	public void setHbaseParameters(HBaseParameters options) {
 		this.hbaseParameters = options;
 	}
 
+	/**
+	 * Gets the default max file size.
+	 *
+	 * @return the default max file size
+	 */
 	@Override
 	long getDefaultMaxFileSize() {
 		return (hbaseParameters.getDefaultMaxFileSizeInBytes());
 	}
 
+	/* (non-Javadoc)
+	 * @see org.archive.modules.writer.WriterPoolProcessor#setupPool(java.util.concurrent.atomic.AtomicInteger)
+	 */
 	@Override
 	protected void setupPool(AtomicInteger serial) {
 		setPool(new HBaseWriterPool(serial, this, getPoolMaxActive(), getMaxWaitForIdleMs(), hbaseParameters));
 	}
 
+	/* (non-Javadoc)
+	 * @see org.archive.modules.writer.WriterPoolProcessor#innerProcessResult(org.archive.modules.CrawlURI)
+	 */
 	@Override
 	protected ProcessResult innerProcessResult(CrawlURI uri) {
 		CrawlURI curi = uri;
@@ -698,12 +720,10 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
 	/**
 	 * Determine if the given uri exists as a rowkey in the configured hbase
 	 * table.
-	 * 
-	 * @param curi
-	 *            the curi
-	 * 
+	 *
+	 * @param curi the curi
 	 * @return true, if checks if is record new
-	 * @throws IOException
+	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	private boolean isRecordNew(CrawlURI curi) throws IOException {
 		HBaseWriter hbaseWriter = (HBaseWriter) getPool().borrowFile();
@@ -761,16 +781,27 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
 		return checkBytesWritten();
 	}
 
+	/**
+	 * Gets the default store paths.
+	 *
+	 * @return the default store paths
+	 */
 	@Override
 	List<ConfigPath> getDefaultStorePaths() {
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.archive.modules.writer.WriterPoolProcessor#getMetadata()
+	 */
 	@Override
 	public List<String> getMetadata() {
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.archive.io.warc.WARCWriterPoolSettings#getRecordIDGenerator()
+	 */
 	@Override
 	public RecordIDGenerator getRecordIDGenerator() {
 		return null;

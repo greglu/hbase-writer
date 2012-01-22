@@ -7,10 +7,24 @@ import org.archive.io.WriterPool;
 import org.archive.io.WriterPoolMember;
 import org.archive.io.WriterPoolSettings;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class HBaseWriterPool.
+ */
 public class HBaseWriterPool extends WriterPool {
 
+	/** The _parameters. */
 	private HBaseParameters _parameters;
 
+	/**
+	 * Instantiates a new h base writer pool.
+	 *
+	 * @param serial the serial
+	 * @param settings the settings
+	 * @param poolMaximumActive the pool maximum active
+	 * @param poolMaximumWait the pool maximum wait
+	 * @param parameters the parameters
+	 */
 	public HBaseWriterPool(AtomicInteger serial, WriterPoolSettings settings, int poolMaximumActive, int poolMaximumWait, HBaseParameters parameters) {
 
 		super(serial, settings, poolMaximumActive, poolMaximumWait);
@@ -18,6 +32,9 @@ public class HBaseWriterPool extends WriterPool {
 		_parameters = parameters;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.archive.io.WriterPool#makeWriter()
+	 */
 	@Override
 	protected WriterPoolMember makeWriter() {
 		try {
