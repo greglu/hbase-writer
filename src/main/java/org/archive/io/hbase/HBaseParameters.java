@@ -519,6 +519,9 @@ import com.google.common.base.Preconditions;
  * Meant to be configured within the Spring framework either inline of
  * HBaseWriterProcessor or as a named bean and references later on.
  * 
+ * Typically this config code below is placed in a heritrix3.x job config file called: crawler-beans.cxml
+ * This cxml file can be edited directly from the Heritrix3 web-ui.
+ * 
  * <pre>
  * {@code
  * <bean id="hbaseParameterSettings" class="org.archive.io.hbase.HBaseParameters">

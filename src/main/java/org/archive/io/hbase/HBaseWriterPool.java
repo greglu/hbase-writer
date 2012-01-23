@@ -517,6 +517,9 @@ import org.archive.io.WriterPoolSettings;
 // TODO: Auto-generated Javadoc
 /**
  * The Class HBaseWriterPool.
+ * 
+ * For pooling the HBaseWriter class for Heritrix.  This class is a performance measure to avoid creating an HBaseWriter
+ * everytime Heritrix needs one to write to records to HBase.
  */
 public class HBaseWriterPool extends WriterPool {
 

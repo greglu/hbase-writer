@@ -625,6 +625,7 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
 	 */
 	@Override
 	protected void setupPool(AtomicInteger serial) {
+		// allow the Heritrix WriterPoolProcessor framework to create new HBaseWriterPools as needed.
 		setPool(new HBaseWriterPool(serial, this, getPoolMaxActive(), getMaxWaitForIdleMs(), hbaseParameters));
 	}
 
@@ -635,18 +636,18 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
 	protected ProcessResult innerProcessResult(CrawlURI uri) {
 		CrawlURI curi = uri;
 		long recordLength = getRecordedSize(curi);
-		ReplayInputStream ris = null;
+		ReplayInputStream replayInputStream = null;
 		try {
 			if (shouldWrite(curi)) {
-				ris = curi.getRecorder().getRecordedInput().getReplayInputStream();
-				return write(curi, recordLength, ris);
+				replayInputStream = curi.getRecorder().getRecordedInput().getReplayInputStream();
+				return write(curi, recordLength, replayInputStream);
 			}
 			log.info("Does not write " + curi.toString());
 		} catch (IOException e) {
 			curi.getNonFatalFailures().add(e);
 			log.error("Failed write of Record: " + curi.toString(), e);
 		} finally {
-			ArchiveUtils.closeQuietly(ris);
+			ArchiveUtils.closeQuietly(replayInputStream);
 		}
 		return ProcessResult.PROCEED;
 	}
@@ -660,15 +661,15 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
 	 */
 	@Override
 	protected boolean shouldProcess(CrawlURI curi) {
-		// The old method is still checked, but only continue with the next
-		// checks if it returns true.
+		// The super method is still checked, but only continue with 
+		// process checking if it returns true.  This way the super class
+		// overrides our checking.
 		if (!super.shouldProcess(curi)) {
 			return false;
 		}
 
 		// If onlyProcessNewRecords is enabled and the given rowkey has cell
-		// data,
-		// don't write the record.
+		// data,then don't process the record.
 		if (hbaseParameters.isOnlyProcessNewRecords()) {
 			try {
 				return isRecordNew(curi);
@@ -678,7 +679,7 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
 		}
 
 		// If we make it here, then we passed all our checks and we can assume
-		// we should write the record.
+		// we should process the record.
 		return true;
 	}
 
@@ -729,7 +730,9 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 */
 	private boolean isRecordNew(CrawlURI curi) throws IOException {
+		// get the writer from the pool
 		HBaseWriter hbaseWriter = (HBaseWriter) getPool().borrowFile();
+		// get the client from the writer
 		HTable hbaseTable = hbaseWriter.getClient();
 		// Here we can generate the rowkey for this uri ...
 		String url = curi.toString();
@@ -738,6 +741,7 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
 			// and look it up to see if it already exists...
 			Get rowToGet = new Get(Bytes.toBytes(row));
 			if (hbaseTable.get(rowToGet) != null && !hbaseTable.get(rowToGet).isEmpty()) {
+				// if it exists, then its not new
 				if (log.isDebugEnabled()) {
 					log.debug("Not A NEW Record - Url: " + url + " has the existing rowkey: " + row + " and has cell data.");
 				}
@@ -747,12 +751,18 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
 			log.error("Failed to determine if record: " + row + " is a new record due to IOExecption.  Deciding the record is already existing for now.", e);
 			return false;
 		} finally {
+			// always return the client back to the pool no matter what
 			try {
 				getPool().returnFile(hbaseWriter);
 			} catch (IOException e) {
+				// and it its not, log as an error
 				log.error("Failed to add back writer to the pool after checking if a rowkey is new or existing , writerPoolMember: " + hbaseWriter, e);
 				return false;
 			}
+		}
+		// if were here then the row key must not exist, so its a new record
+		if (log.isDebugEnabled()) {
+			log.debug("Found A NEW Record - Url: " + url + " has no existing rowkey: " + row );
 		}
 		return true;
 	}
@@ -773,14 +783,20 @@ public class HBaseWriterProcessor extends WriterPoolProcessor implements WARCWri
 	 *             Signals that an I/O exception has occurred.
 	 */
 	protected ProcessResult write(final CrawlURI curi, long recordLength, InputStream in) throws IOException {
+		// grab the writer from the pool
 		HBaseWriter hbaseWriter = (HBaseWriter) getPool().borrowFile();
+		// get the member position for logging Total Bytes Written
 		long writerPoolMemberPosition = hbaseWriter.getPosition();
 		try {
+			// write the crawled data to hbase
 			hbaseWriter.write(curi, getHostAddress(curi), curi.getRecorder().getRecordedOutput(), curi.getRecorder().getRecordedInput());
 		} finally {
+			// log total bytes written
 			setTotalBytesWritten(getTotalBytesWritten() + (hbaseWriter.getPosition() - writerPoolMemberPosition));
+			// return the hbaseWriter client back to the pool.
 			getPool().returnFile(hbaseWriter);
 		}
+		// to alert heritrix what action to take next in the crawl
 		return checkBytesWritten();
 	}
 
